@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+        <meta name="theme-color" content="#223c54"/>
+        <title>PURR PATCH｜助理日程工作台</title>
+        <link rel="icon" type="image/jpeg" href="assets/purr-patch-logo.jpg"/>
+        <link rel="stylesheet" href="style.css"/>
+        <link rel="stylesheet" href="theme.css"/>
+    </head>
+    <body>
+        <section id="loginScreen" class="login-screen">
+            <div class="login-card">
+                <div class="login-brand">
+                    <div class="brand-logo"><img src="assets/purr-patch-logo.jpg" alt="PURR PATCH" width="1280" height="1280"></div>
+                    <small>个人助理工作台</small>
+                </div>
+                <h1>欢迎回来</h1>
+                <p>登录你的个人工作台。当前为本机体验版，账号数据仅保存在这个浏览器中。</p>
+                <form id="loginForm">
+                    <label>
+                        账号<input id="loginAccount" autocomplete="username" required placeholder="请输入体验账号">
+                    </label>
+                    <label>
+                        密码<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="请输入密码">
+                    </label>
+                    <small id="loginError" class="login-error"></small>
+                    <button class="primary" type="submit">登录工作台</button>
+                </form>
+                <div class="account-options">
+                    <button type="button" data-demo-login="demo">
+                        <b>测试账号</b>
+                        <small>带完整示例内容，适合快速查看功能</small>
+                    </button>
+                    <button type="button" data-demo-login="fresh">
+                        <b>全新账号</b>
+                        <small>创建一次性空账号；退出后账号及数据会被清除</small>
+                    </button>
+                </div>
+            </div>
+        </section>
+        <div class="app-shell" id="appShell" hidden>
+            <aside class="sidebar">
+                <div class="brand">
+                    <div class="brand-logo"><img src="assets/purr-patch-logo.jpg" alt="PURR PATCH" width="1280" height="1280"></div>
+                    <small>个人助理工作台</small>
+                </div>
+                <nav id="nav">
+                    <button class="nav-item active" data-view="dashboard">
+                        <span>⌂</span>
+                        工作台
+                    </button>
+                    <button class="nav-item" data-view="calendar">
+                        <span>▦</span>
+                        日程日历
+                    </button>
+                    <button class="nav-item" data-view="tasks">
+                        <span>✓</span>
+                        任务清单 <i id="taskBadge">5</i>
+                    </button>
+                    <button class="nav-item" data-view="meetings">
+                        <span>◎</span>
+                        会议管理
+                    </button>
+                    <button class="nav-item" data-view="learning">
+                        <span>◫</span>
+                        每日学习
+                    </button>
+                </nav>
+                <div class="side-tip">
+                    <b>任务完成度</b>
+                    <div class="progress">
+                        <i id="taskProgressBar" style="width:0%"></i>
+                    </div>
+                    <small id="taskProgressText">0 / 0 项已完成</small>
+                </div>
+                <div class="profile">
+                    <div class="avatar" id="avatarText">助</div>
+                    <div id="profileEdit">
+                        <b id="profileName">我的工作台</b>
+                        <small>
+                            <span class="online"></span>
+                            <span id="accountState">本机演示数据</span>
+                        </small>
+                    </div>
+                    <button type="button" id="logoutBtn" class="sidebar-logout" title="返回账号选择">退出</button>
+                </div>
+            </aside>
+            <main>
+                <header>
+                    <div class="page-heading">
+                        <div>
+                            <h1 id="pageTitle">早上好</h1>
+                            <p id="pageSub">今天的日程、任务和会议已为你整理好</p>
+                        </div>
+                        <div class="brand-logo mobile-brand"><img src="assets/purr-patch-logo.jpg" alt="PURR PATCH" width="1280" height="1280"></div>
+                    </div>
+                    <div class="header-actions">
+                        <div class="header-utility-actions">
+                            <button class="icon-btn" id="searchBtn" aria-label="搜索">⌕</button>
+                            <button type="button" class="secondary account-exit-btn" id="logoutHeaderBtn">退出账号</button>
+                        </div>
+                        <div id="dashboardCreateActions" class="dashboard-create-actions">
+                            <button class="secondary" data-header-create="schedule">＋ 新建日程</button>
+                            <button class="secondary" data-header-create="task">＋ 新建任务</button>
+                            <button class="primary" data-header-create="meeting">＋ 新建会议</button>
+                        </div>
+                    </div>
+                </header>
+                <section id="dashboard" class="view active">
+                    <div class="day-overview">
+                        <article class="today-card">
+                            <div class="eyebrow">YOUR DAILY SPACE · 每一天，有条不紊</div>
+                            <div class="today-heading"><h2>把时间，留给重要的事。</h2><span class="live-badge"><i></i>实时同步</span></div>
+                            <p>理清今天的安排，从容开始新的一天。</p>
+                            <div class="today-bottom"><time id="liveDate"></time><time id="liveTime"></time></div>
+                            <div class="orbit-art" aria-hidden="true"><i></i><i></i><i></i></div>
+                        </article>
+                        <article class="weather-card">
+                            <div class="weather-top"><span class="eyebrow">此刻天气</span><button type="button" id="weatherLocate" class="text-btn">◎ 使用定位</button></div>
+                            <div class="weather-main"><span id="weatherIcon" aria-hidden="true">◌</span><div><b id="weatherTemperature">—°</b><span id="weatherDescription">选择城市，了解今日天气</span></div></div>
+                            <form id="weatherCityForm" class="weather-city-form"><label for="weatherCity" class="sr-only">天气城市</label><input id="weatherCity" placeholder="输入城市，如：上海" required maxlength="60" autocomplete="off"><button type="submit" aria-label="查询城市天气">查询 ↗</button></form>
+                            <div id="weatherResults" class="weather-results" hidden></div>
+                            <p id="weatherStatus" role="status">设置后每 15 分钟自动更新</p>
+                            <a class="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">天气数据 · Open-Meteo ↗</a>
+                        </article>
+                    </div>
+                    <div class="workspace-switch">
+                        <div>
+                            <b>工作台视角</b>
+                            <small id="perspectiveHint">同时统筹我的任务和老板的安排</small>
+                        </div>
+                        <div class="perspective-tabs">
+                            <button class="active" data-perspective="mine">我的视角</button>
+                            <button data-perspective="boss">老板视角</button>
+                        </div>
+                    </div>
+                    <div class="summary-strip">
+                        <article class="summary blue">
+                            <div>
+                                <span>待办任务</span>
+                                <b id="pendingCount">0</b>
+                                <small id="todayTaskHint">暂无今日待办</small>
+                            </div>
+                            <em>✓</em>
+                        </article>
+                        <article class="summary violet">
+                            <div>
+                                <span>本日会议</span>
+                                <b id="todayMeetingCount">0</b>
+                                <small>今日需要参加或准备</small>
+                            </div>
+                            <em>◎</em>
+                        </article>
+                        <article class="summary amber">
+                            <div>
+                                <span>明日会议</span>
+                                <b id="tomorrowMeetingCount">0</b>
+                                <small>提前查看并完成准备</small>
+                            </div>
+                            <em>◷</em>
+                        </article>
+                    </div>
+                    <div class="dashboard-date-nav">
+                        <button id="dashboardPrevDay">‹</button>
+                        <button id="dashboardToday">今天</button>
+                        <strong id="dashboardDateLabel">今日</strong>
+                        <button id="dashboardNextDay">›</button>
+                        <div class="segmented itinerary-switch" aria-label="工作台展示方式">
+                            <button type="button" class="active" data-dashboard-layout="timeline" aria-pressed="true">时间轴</button>
+                            <button type="button" data-dashboard-layout="table" aria-pressed="false">行程表</button>
+                        </div>
+                    </div>
+                    <article id="itineraryPanel" class="panel itinerary-panel" hidden>
+                        <div class="panel-head">
+                            <div><h2>每日行程表</h2><p>与日程同步 · 点击主题可编辑 · 任务和会议请查看时间轴</p></div>
+                            <button type="button" class="primary" id="itineraryCreate">＋ 添加行程</button>
+                        </div>
+                        <h3 id="itineraryTitle" class="itinerary-title"></h3>
+                        <div id="itineraryWeather" class="itinerary-weather" aria-live="polite">请先在天气卡片设置城市，以获取当日天气预报。</div>
+                        <div class="itinerary-scroll" tabindex="0" role="region" aria-label="行程明细，可左右滚动">
+                            <table class="itinerary-table">
+                                <caption class="sr-only">所选日期的行程明细</caption>
+                                <thead>
+                                    <tr><th rowspan="2" scope="col">序号</th><th rowspan="2" scope="col">日期</th><th colspan="4" scope="colgroup">时间</th><th rowspan="2" scope="col">日程类型</th><th rowspan="2" scope="col">日程主题</th><th rowspan="2" scope="col">参与人员</th><th rowspan="2" scope="col">地点</th></tr>
+                                    <tr><th scope="col">时间段</th><th scope="col">开始时间</th><th scope="col">结束时间</th><th scope="col">时长（min）</th></tr>
+                                </thead>
+                                <tbody id="itineraryRows"></tbody>
+                            </table>
+                        </div>
+                        <p class="itinerary-scroll-hint">← 左右滑动表格，查看完整行程 →</p>
+                        <div class="itinerary-legend" aria-label="行程颜色分类"><b>颜色区分</b><span data-category="work">工作安排 · 黄色</span><span data-category="life">生活安排 · 蓝色</span><span data-category="pending">未安排 · 绿色</span><span data-category="travel">出差 · 浅紫色</span></div>
+                    </article>
+                    <div class="content-grid dashboard-content-grid">
+                        <article class="panel schedule-panel">
+                            <div class="panel-head">
+                                <div>
+                                    <h2 id="scheduleTitle">今日安排</h2>
+                                    <p id="scheduleDesc">按时间展示日程、任务和会议；时间重合时自动并列</p>
+                                </div>
+                                <div class="legend">
+                                    <span>
+                                        <i class="dot boss-dot"></i>
+                                        老板
+                                    </span>
+                                    <span class="mine-legend">
+                                        <i class="dot mine-dot"></i>
+                                        我的
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="timeline" class="timeline"></div>
+                        </article>
+                        <aside class="right-column">
+                            <article class="panel focus">
+                                <div class="panel-head">
+                                    <div>
+                                        <h2 id="dashboardTaskTitle">今日任务清单</h2>
+                                        <p>完成后自动移入已完成</p>
+                                    </div>
+                                    <button class="text-btn" data-go="tasks">查看全部</button>
+                                </div>
+                                <div id="dashboardTaskList" class="dashboard-task-list"></div>
+                            </article>
+                            <article class="panel">
+                                <div class="panel-head">
+                                    <div>
+                                        <h2 id="dashboardMeetingTitle">今日会议</h2>
+                                        <p>会议仅来自会议管理</p>
+                                    </div>
+                                    <button class="text-btn" data-go="meetings">查看全部</button>
+                                </div>
+                                <div id="dashboardMeetingList" class="dashboard-meeting-list"></div>
+                            </article>
+                        </aside>
+                    </div>
+                </section>
+                <section id="calendar" class="view">
+                    <div class="section-title module-title">
+                        <div>
+                            <h2>日程安排</h2>
+                            <p>同一份日程，通过视角筛选，无需重复录入</p>
+                        </div>
+                        <button class="primary" data-create="schedule">＋ 新建日程</button>
+                    </div>
+                    <div class="module-switch">
+                        <div>
+                            <b>日历视角</b>
+                            <small data-perspective-copy="calendar">同时显示我的日程和老板日程，老板事项重点突出</small>
+                        </div>
+                        <div class="perspective-tabs">
+                            <button class="active" data-module-perspective="calendar" data-value="mine">我的视角</button>
+                            <button data-module-perspective="calendar" data-value="boss">老板视角</button>
+                        </div>
+                    </div>
+                    <div class="panel calendar-panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2 id="calendarPeriodTitle">本月</h2>
+                                <p id="calendarModeHint">月视图 · 深蓝为老板日程，浅蓝为我的日程</p>
+                            </div>
+                            <div class="segmented">
+                                <button data-calendar-mode="day">日</button>
+                                <button data-calendar-mode="week">周</button>
+                                <button class="active" data-calendar-mode="month">月</button>
+                            </div>
+                        </div>
+                        <div id="monthGrid" class="month-grid"></div>
+                    </div>
+                </section>
+                <section id="tasks" class="view">
+                    <div class="section-title module-title">
+                        <div>
+                            <h2>任务清单</h2>
+                            <p>按日期与优先级管理待完成、已完成任务</p>
+                        </div>
+                        <button class="primary" data-create="task">＋ 新建任务</button>
+                    </div>
+                    <div class="compact-view-switch">
+                        <span>视角</span>
+                        <button class="active" data-module-perspective="tasks" data-value="mine">Me</button>
+                        <button data-module-perspective="tasks" data-value="boss">Boss</button>
+                    </div>
+                    <div class="task-toolbar">
+                        <div class="dashboard-date-nav">
+                            <button id="taskPrevDay">‹</button>
+                            <button id="taskToday">今天</button>
+                            <strong id="taskDateLabel">今日</strong>
+                            <button id="taskNextDay">›</button>
+                        </div>
+                        <div class="priority-filter">
+                            <button class="active" data-priority-filter="all">全部</button>
+                            <button data-priority-filter="3">★★★</button>
+                            <button data-priority-filter="2">★★</button>
+                            <button data-priority-filter="1">★</button>
+                        </div>
+                    </div>
+                    <div class="task-board">
+                        <article class="panel">
+                            <div class="panel-head">
+                                <div>
+                                    <h2>待完成</h2>
+                                    <p>按优先级从高到低排列</p>
+                                </div>
+                                <span class="count-pill" id="pendingTaskSectionCount"></span>
+                            </div>
+                            <div id="pendingTaskList"></div>
+                        </article>
+                        <article class="panel completed-panel">
+                            <div class="panel-head">
+                                <div>
+                                    <h2>已完成</h2>
+                                    <p>点击实心圆可恢复为待完成</p>
+                                </div>
+                                <span class="count-pill" id="completedTaskSectionCount"></span>
+                            </div>
+                            <div id="completedTaskList"></div>
+                        </article>
+                    </div>
+                    <div id="taskList" hidden></div>
+                </section>
+                <section id="meetings" class="view">
+                    <div class="section-title meeting-title">
+                        <div>
+                            <h2>会议管理</h2>
+                        </div>
+                        <div class="meeting-head-actions">
+                            <button class="secondary" id="manageMeetingTypes">会议类型管理</button>
+                            <button class="secondary" id="managePeople">常用人员名单</button>
+                            <button class="primary" data-create="meeting">＋ 新建会议</button>
+                        </div>
+                    </div>
+                    <div class="meeting-layout">
+                        <aside class="panel meeting-list-panel">
+                            <div class="panel-head">
+                                <div>
+                                    <h2>会议列表</h2>
+                                </div>
+                                <span class="count-pill" id="meetingCount"></span>
+                            </div>
+                            <div id="meetingCards" class="meeting-list"></div>
+                        </aside>
+                    </div>
+                </section>
+                <section id="learning" class="view">
+                    <div class="section-title learning-title">
+                        <div>
+                            <h2>每日学习</h2>
+                            <p>简单记录学习内容、日期、时间和学习总结</p>
+                        </div>
+                        <button class="primary" data-create="learning">＋ 新建学习记录</button>
+                    </div>
+                    <div class="learning-simple-grid">
+                        <article class="panel">
+                            <div class="panel-head">
+                                <div>
+                                    <h2>学习记录</h2>
+                                    <p>按日期保留每天的学习内容</p>
+                                </div>
+                            </div>
+                            <div id="learningRecordList"></div>
+                        </article>
+                        <article class="panel">
+                            <div class="panel-head">
+                                <div>
+                                    <h2>今日总结</h2>
+                                    <p>对整天工作与生活的独立总结</p>
+                                </div>
+                                <span class="tag normal" id="dailySummaryState">尚未保存</span>
+                            </div>
+                            <textarea id="dailySummary" class="summary-textarea" placeholder="记录今天整体完成了什么、有什么感受或需要调整的地方"></textarea>
+                            <button class="primary save-learning" id="saveDailySummary">保存今日总结</button>
+                        </article>
+                        <article class="panel">
+                            <div class="panel-head">
+                                <div>
+                                    <h2>学习总结</h2>
+                                    <p>只总结今天的学习收获</p>
+                                </div>
+                                <span class="tag normal" id="learningSummaryState">尚未保存</span>
+                            </div>
+                            <textarea id="learningSummary" class="summary-textarea" placeholder="记录今天学到了什么、形成了什么认识"></textarea>
+                            <button class="primary save-learning" id="saveLearningSummary">保存学习总结</button>
+                        </article>
+                    </div>
+                </section>
+            </main>
+        </div>
+        <nav class="mobile-nav" id="mobileNav" hidden>
+            <button data-view="dashboard" class="active">
+                ⌂<small>工作台</small>
+            </button>
+            <button data-view="calendar">
+                ▦<small>日历</small>
+            </button>
+            <button data-view="tasks">
+                ✓<small>任务</small>
+            </button>
+            <button data-view="meetings">
+                ◎<small>会议</small>
+            </button>
+            <button data-view="learning">
+                ◫<small>学习</small>
+            </button>
+        </nav>
+        <dialog id="newDialog">
+            <form id="eventForm">
+                <input type="hidden" name="createType" value="schedule">
+                <div class="modal-grabber" aria-hidden="true"></div>
+                <div class="modal-head">
+                    <div>
+                        <h2 id="createTitle">新建日程</h2>
+                        <p id="createDesc">记录行程日期、时间区间、地点与所属对象</p>
+                    </div>
+                    <button type="button" class="close" data-close-dialog aria-label="关闭">×</button>
+                </div>
+                <div class="modal-scroll">
+                    <div class="form-grid">
+                        <label class="wide">
+                            <span id="titleLabel">日程标题</span>
+                            <input name="title" required maxlength="60" placeholder="请输入标题">
+                            <small class="field-help">灰色示例文字不是已填写内容</small>
+                        </label>
+                        <label class="schedule-field">
+                            所属对象
+                            <select name="owner">
+                                <option value="boss">老板日程</option>
+                                <option value="mine">我的日程</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span id="dateLabel">日期</span>
+                            <input type="date" name="date" required>
+                        </label>
+                        <label class="schedule-field meeting-field">
+                            时间方式
+                            <select name="timeMode" id="timeMode">
+                                <option value="none">不设置时间</option>
+                                <option value="period">选择时段</option>
+                                <option value="exact">具体时间区间</option>
+                            </select>
+                        </label>
+                        <label id="periodWrap" class="schedule-field meeting-field">
+                            时间段
+                            <select name="period" id="period">
+                                <option>上午</option>
+                                <option>下午</option>
+                                <option>晚上</option>
+                            </select>
+                        </label>
+                        <div id="exactRangeWrap" class="wide time-range schedule-field meeting-field">
+                            <label>
+                                开始时间<input type="time" name="startTime" id="startTime" step="60">
+                            </label>
+                            <span>至</span>
+                            <label>
+                                结束时间<input type="time" name="endTime" id="endTime" step="60">
+                            </label>
+                            <small id="timeError" class="field-error"></small>
+                        </div>
+                        <label class="wide schedule-field meeting-field">
+                            地点<input name="location" placeholder="会议室、地址或线上链接">
+                        </label>
+                        <label class="schedule-field">
+                            安排分类
+                            <select name="scheduleCategory"><option value="work">工作安排（黄色）</option><option value="life">生活安排（蓝色）</option><option value="pending">未安排（绿色）</option><option value="travel">出差（浅紫色）</option></select>
+                        </label>
+                        <label class="schedule-field">
+                            日程类型<input name="scheduleType" maxlength="30" placeholder="如：沟通、餐叙、出行">
+                        </label>
+                        <label class="wide schedule-field">
+                            参与人员<input name="scheduleParticipants" maxlength="200" placeholder="如：张总、赵总、于肖肖">
+                        </label>
+                        <label class="task-field">
+                            任务类型
+                            <select name="taskType">
+                                <option>普通待办</option>
+                                <option>会前准备</option>
+                                <option>会后跟踪</option>
+                                <option>项目跟进</option>
+                                <option>接待安排</option>
+                            </select>
+                        </label>
+                        <label class="meeting-field">
+                            会议类型
+                            <select name="meetingType">
+                                <option>信息同步会</option>
+                                <option>决策会</option>
+                                <option>复盘会</option>
+                                <option>项目推进会</option>
+                                <option>客户沟通会</option>
+                            </select>
+                        </label>
+                        <label class="meeting-field">
+                            主持人<input name="host" placeholder="请输入主持人">
+                        </label>
+                        <label class="wide meeting-field">
+                            参会人员<input name="participants" placeholder="填写必须参会、建议参会和知会人员">
+                        </label>
+                        <label class="wide meeting-field">
+                            会议目标与预期输出<textarea name="goal" placeholder="说明会议要解决什么问题、形成什么结果"></textarea>
+                        </label>
+                        <label class="learning-field">
+                            学习用时
+                            <select name="duration">
+                                <option>30 分钟</option>
+                                <option>1 小时</option>
+                                <option>1.5 小时</option>
+                                <option>2 小时</option>
+                                <option>2 小时以上</option>
+                            </select>
+                        </label>
+                        <label class="learning-field">
+                            学习类型
+                            <select name="learningType">
+                                <option>专业学习</option>
+                                <option>阅读</option>
+                                <option>课程</option>
+                                <option>工作复盘</option>
+                            </select>
+                        </label>
+                        <label class="wide learning-field">
+                            今日总结<textarea name="summary" placeholder="记录今天学到了什么、形成了什么认识"></textarea>
+                        </label>
+                        <label class="wide learning-field">
+                            下一步学习<textarea name="nextStep" placeholder="记录下一步准备继续学习的内容"></textarea>
+                        </label>
+                        <label class="task-field schedule-field">
+                            优先级
+                            <select name="priority">
+                                <option>重要</option>
+                                <option>普通</option>
+                                <option>紧急</option>
+                            </select>
+                        </label>
+                        <label class="task-field schedule-field">
+                            总览事项提示
+                            <select name="reminder">
+                                <option value="none">不显示提示</option>
+                                <option value="same">当天显示</option>
+                                <option value="1">提前 1 天显示</option>
+                                <option value="3">提前 3 天显示</option>
+                                <option value="7">提前 7 天显示</option>
+                            </select>
+                        </label>
+                        <label class="wide task-field schedule-field">
+                            备注<textarea name="note" placeholder="填写联系人、准备资料或补充说明"></textarea>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="secondary" data-close-dialog>取消</button>
+                    <button type="submit" class="primary" id="saveEvent">保存日程</button>
+                </div>
+            </form>
+        </dialog>
+        <dialog id="meetingDialog" class="meeting-wizard-dialog">
+            <form id="meetingWizardForm">
+                <div class="modal-grabber" aria-hidden="true"></div>
+                <div class="modal-head">
+                    <div>
+                        <h2>新建会议</h2>
+                        <p>按完整会议框架逐步设置，可随时保存草稿</p>
+                    </div>
+                    <button type="button" class="close" data-close-dialog aria-label="关闭">×</button>
+                </div>
+                <div class="wizard-progress" id="meetingWizardProgress"></div>
+                <div class="modal-scroll wizard-scroll">
+                    <section class="wizard-step active" data-wizard-step="0">
+                        <div class="step-intro">
+                            <b>第一步：选择会议类型</b>
+                            <span>系统将据此加载议程、记录和检查清单模板</span>
+                        </div>
+                        <div class="meeting-type-grid" id="meetingTypeGrid">
+                            <label>
+                                <input type="radio" name="wizardMeetingType" value="信息同步会" required>
+                                <span>
+                                    <b>信息同步会</b>
+                                    <small>同步信息、政策、进展或通知</small>
+                                </span>
+                            </label>
+                            <label>
+                                <input type="radio" name="wizardMeetingType" value="项目推进会">
+                                <span>
+                                    <b>项目推进会</b>
+                                    <small>检查进度、协调资源和解决问题</small>
+                                </span>
+                            </label>
+                            <label>
+                                <input type="radio" name="wizardMeetingType" value="问题解决会">
+                                <span>
+                                    <b>问题解决会</b>
+                                    <small>分析问题、确定原因并形成方案</small>
+                                </span>
+                            </label>
+                            <label>
+                                <input type="radio" name="wizardMeetingType" value="决策会议">
+                                <span>
+                                    <b>决策会议</b>
+                                    <small>讨论方案并作出明确决策</small>
+                                </span>
+                            </label>
+                            <label>
+                                <input type="radio" name="wizardMeetingType" value="复盘总结会">
+                                <span>
+                                    <b>复盘总结会</b>
+                                    <small>回顾结果、总结经验并改进</small>
+                                </span>
+                            </label>
+                            <label>
+                                <input type="radio" name="wizardMeetingType" value="创意讨论会">
+                                <span>
+                                    <b>创意讨论会</b>
+                                    <small>头脑风暴、方案讨论和创意收集</small>
+                                </span>
+                            </label>
+                            <label>
+                                <input type="radio" name="wizardMeetingType" value="培训分享会">
+                                <span>
+                                    <b>培训分享会</b>
+                                    <small>知识分享、业务培训和经验交流</small>
+                                </span>
+                            </label>
+                            <label>
+                                <input type="radio" name="wizardMeetingType" value="其他会议">
+                                <span>
+                                    <b>其他会议</b>
+                                    <small>自定义会议用途</small>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-grid">
+                            <label class="wide">
+                                会议目的<textarea name="wizardPurpose" required placeholder="本次会议要解决什么问题"></textarea>
+                            </label>
+                            <label class="wide">
+                                预期输出<textarea name="wizardOutput" required placeholder="例如：形成决策、方案、任务清单或确认事项"></textarea>
+                            </label>
+                        </div>
+                    </section>
+                    <section class="wizard-step" data-wizard-step="1">
+                        <div class="step-intro">
+                            <b>第二步：填写基本信息</b>
+                            <span>会议时间、形式和核心角色均为发布必填项</span>
+                        </div>
+                        <div class="form-grid">
+                            <label class="wide">
+                                会议主题<input name="wizardTitle" required placeholder="填写清晰、具体的会议名称">
+                            </label>
+                            <label>
+                                所属对象
+                                <select name="wizardOwner">
+                                    <option value="boss">老板相关</option>
+                                    <option value="mine">我的工作</option>
+                                </select>
+                            </label>
+                            <label>
+                                会议日期<input type="date" name="wizardDate" required>
+                            </label>
+                            <label>
+                                开始时间<input type="time" name="wizardStart" required>
+                            </label>
+                            <label>
+                                结束时间<input type="time" name="wizardEnd" required>
+                            </label>
+                            <label>
+                                会议时长<input id="wizardDuration" readonly placeholder="自动计算">
+                            </label>
+                            <label>
+                                会议形式
+                                <select name="wizardFormat" id="wizardFormat" required>
+                                    <option value="offline">线下会议</option>
+                                    <option value="online">线上会议</option>
+                                    <option value="hybrid">线上线下结合</option>
+                                </select>
+                            </label>
+                            <label>
+                                会议主持人<input name="wizardHost" required placeholder="负责流程和节奏">
+                            </label>
+                            <label>
+                                会议发起人<input name="wizardInitiator" required value="当前创建者">
+                            </label>
+                            <label>
+                                会议记录人<input name="wizardRecorder" required placeholder="负责会议记录和纪要">
+                            </label>
+                            <label class="format-offline">
+                                会议地点<input name="wizardLocation" placeholder="楼层、会议室或具体位置">
+                            </label>
+                            <label class="format-offline">
+                                设备及现场要求<input name="wizardEquipment" placeholder="投影、白板、备用设备等">
+                            </label>
+                            <label class="format-online">
+                                会议平台<input name="wizardPlatform" placeholder="例如：腾讯会议、Teams">
+                            </label>
+                            <label class="format-online">
+                                会议链接<input name="wizardLink" placeholder="请输入线上会议链接">
+                            </label>
+                            <label class="format-online">
+                                会议号及密码<input name="wizardAccess" placeholder="会议号 / 密码">
+                            </label>
+                            <label>
+                                保密级别
+                                <select name="wizardConfidential">
+                                    <option>普通</option>
+                                    <option>内部</option>
+                                    <option>机密</option>
+                                </select>
+                            </label>
+                            <label class="wide">
+                                会议背景说明<textarea name="wizardBackground" placeholder="相关项目、业务背景或备注"></textarea>
+                            </label>
+                        </div>
+                    </section>
+                    <section class="wizard-step" data-wizard-step="2">
+                        <div class="step-intro">
+                            <b>第三步：设置参会人员</b>
+                            <span>至少指定必须参加人员，并完成主持人和记录人设置</span>
+                        </div>
+                        <div class="form-grid">
+                            <label class="wide">
+                                必须参加人员<textarea name="wizardRequiredPeople" required placeholder="每行一人，可填写姓名及部门"></textarea>
+                            </label>
+                            <label class="wide">
+                                建议参加人员<textarea name="wizardSuggestedPeople" placeholder="建议参加但不影响会议召开"></textarea>
+                            </label>
+                            <label class="wide">
+                                仅知会人员<textarea name="wizardInformedPeople" placeholder="只接收通知、纪要或会议结果"></textarea>
+                            </label>
+                            <label>
+                                决策人<input name="wizardDecisionMaker" placeholder="决策会议必须填写">
+                            </label>
+                            <label>
+                                汇报人<input name="wizardPresenter" placeholder="负责对应议题汇报">
+                            </label>
+                            <label class="wide">
+                                行动项负责人候选<textarea name="wizardActionOwners" placeholder="填写可承担会议行动项的具体人员"></textarea>
+                            </label>
+                        </div>
+                        <div class="inline-checks">
+                            <label>
+                                <input type="checkbox" name="wizardNoConflict">已检查关键人员时间冲突
+                            </label>
+                            <label>
+                                <input type="checkbox" name="wizardNoDuplicate">已检查重复人员
+                            </label>
+                            <label>
+                                <input type="checkbox" name="wizardPermissionChecked">已检查保密权限
+                            </label>
+                        </div>
+                    </section>
+                    <section class="wizard-step" data-wizard-step="3">
+                        <div class="step-intro">
+                            <b>第四步：设置会议议程</b>
+                            <span>每个议题明确负责人、时长、讨论目标和预期输出</span>
+                        </div>
+                        <div id="agendaItems" class="agenda-items"></div>
+                        <button type="button" class="secondary add-row-btn" id="addAgendaBtn">＋ 添加议题</button>
+                        <div class="agenda-summary">
+                            <span>
+                                会议时间：<b id="meetingMinutes">0</b>
+                                分钟
+                            </span>
+                            <span>
+                                议程合计：<b id="agendaMinutes">0</b>
+                                分钟
+                            </span>
+                            <em id="agendaWarning"></em>
+                        </div>
+                    </section>
+                    <section class="wizard-step" data-wizard-step="4">
+                        <div class="step-intro">
+                            <b>第五步：上传会议资料</b>
+                            <span>当前体验版记录资料信息，文件不会上传到云端</span>
+                        </div>
+                        <div id="materialItems" class="material-items"></div>
+                        <button type="button" class="secondary add-row-btn" id="addMaterialBtn">＋ 添加资料</button>
+                        <div class="form-grid">
+                            <label>
+                                阅读截止时间<input type="datetime-local" name="wizardReadDeadline">
+                            </label>
+                            <label>
+                                默认文件权限
+                                <select name="wizardFilePermission">
+                                    <option>仅参会人员查看</option>
+                                    <option>允许下载</option>
+                                    <option>仅在线查看</option>
+                                </select>
+                            </label>
+                        </div>
+                    </section>
+                    <section class="wizard-step" data-wizard-step="5">
+                        <div class="step-intro">
+                            <b>第六步：设置会议通知</b>
+                            <span>本机体验版只保存配置，不真实发送外部通知</span>
+                        </div>
+                        <div class="option-group">
+                            <b>通知方式</b>
+                            <div class="inline-checks">
+                                <label>
+                                    <input type="checkbox" name="notifyApp" checked>APP 消息
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="notifyPush">系统推送
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="notifySms">短信
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="notifyEmail">邮件
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="notifyInternal">企业内部通信工具
+                                </label>
+                            </div>
+                        </div>
+                        <div class="option-group">
+                            <b>提醒规则</b>
+                            <div class="inline-checks">
+                                <label>
+                                    <input type="checkbox" name="remindPublish" checked>发布后立即提示
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="remindDay" checked>提前一天
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="remindHour" checked>提前一小时
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="remindTen">提前十分钟
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="remindChange" checked>变更或取消时提示
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <label>
+                                联系人<input name="wizardContact" placeholder="会议联系人">
+                            </label>
+                            <label>
+                                联系方式<input name="wizardContactInfo" placeholder="电话或邮箱">
+                            </label>
+                            <label class="wide">
+                                <input type="checkbox" name="wizardNeedResponse">要求参会人员确认参加状态
+                            </label>
+                        </div>
+                    </section>
+                    <section class="wizard-step" data-wizard-step="6">
+                        <div class="step-intro">
+                            <b>第七步：记录模板与会后跟进</b>
+                            <span>预先确定纪要、行动项和持续跟进规则</span>
+                        </div>
+                        <div class="form-grid">
+                            <label>
+                                <input type="checkbox" name="autoMinutes" checked>自动生成标准会议记录模板
+                            </label>
+                            <label>
+                                <input type="checkbox" name="autoActions" checked>自动生成行动项
+                            </label>
+                            <label>
+                                <input type="checkbox" name="syncTasks" checked>行动项同步至任务清单
+                            </label>
+                            <label>
+                                纪要整理人<input name="minutesOwner" placeholder="默认会议记录人">
+                            </label>
+                            <label>
+                                纪要提交截止时间<input type="datetime-local" name="minutesDeadline">
+                            </label>
+                            <label>
+                                纪要审核人<input name="minutesReviewer" placeholder="主持人或指定审核人">
+                            </label>
+                            <label>
+                                纪要发送范围
+                                <select name="minutesAudience">
+                                    <option>全部参会和知会人员</option>
+                                    <option>仅实际参会人员</option>
+                                    <option>自定义范围</option>
+                                </select>
+                            </label>
+                            <label>
+                                行动项提醒频率
+                                <select name="actionReminder">
+                                    <option>每天</option>
+                                    <option>每三天</option>
+                                    <option>每周</option>
+                                    <option>仅截止前提醒</option>
+                                </select>
+                            </label>
+                            <label>
+                                下次会议建议时间<input type="datetime-local" name="nextMeetingTime">
+                            </label>
+                            <label class="wide">
+                                行动项默认验收要求<textarea name="defaultAcceptance" placeholder="每个行动项仍需填写具体负责人、期限和验收标准"></textarea>
+                            </label>
+                        </div>
+                    </section>
+                    <section class="wizard-step" data-wizard-step="7">
+                        <div class="step-intro">
+                            <b>第八步：发布前检查</b>
+                            <span>必填项未完成时不能发布，仍可保存草稿</span>
+                        </div>
+                        <div id="publishChecklist" class="publish-checklist"></div>
+                        <div class="publish-note">
+                            <b>发布后将建立</b>
+                            <span>会议编号、详情页、议程、记录模板、会前检查清单、资料目录、行动项入口及会议状态。</span>
+                        </div>
+                    </section>
+                </div>
+                <div class="modal-actions wizard-actions">
+                    <button type="button" class="secondary" id="wizardPrev">上一步</button>
+                    <button type="button" class="secondary" id="saveMeetingDraft">保存草稿</button>
+                    <button type="button" class="primary" id="wizardNext">下一步</button>
+                    <button type="button" class="primary" id="publishMeeting" hidden>立即发布</button>
+                </div>
+            </form>
+        </dialog>
+        <dialog id="quickMeetingDialog" class="quick-meeting-dialog">
+            <form id="quickMeetingForm">
+                <div class="modal-grabber"></div>
+                <div class="modal-head">
+                    <div>
+                        <h2>新建会议</h2>
+                        <p>三步完成会前准备，可随时保存草稿</p>
+                    </div>
+                    <button type="button" class="close" data-close-dialog aria-label="关闭">×</button>
+                </div>
+                <div class="quick-step-tabs" id="quickMeetingSteps">
+                    <button type="button" class="active" data-quick-step="0">1. 基本信息</button>
+                    <button type="button" data-quick-step="1">2. 人员与议程</button>
+                    <button type="button" data-quick-step="2">3. 会前确认</button>
+                </div>
+                <div class="modal-scroll quick-meeting-scroll">
+                    <section class="quick-step active" data-quick-panel="0">
+                        <div class="step-intro">
+                            <b>会议基本信息</b>
+                            <span>明确类型、目标、预期输出和时间地点</span>
+                        </div>
+                        <div class="form-grid">
+                            <label class="wide">
+                                会议主题<input name="quickTitle" required placeholder="填写清晰、具体的会议名称">
+                            </label>
+                            <label>
+                                会议类型<select name="quickType" id="quickMeetingType" required></select>
+                            </label>
+                            <label>
+                                所属对象
+                                <select name="quickOwner">
+                                    <option value="boss">老板相关</option>
+                                    <option value="mine">我的工作</option>
+                                </select>
+                            </label>
+                            <label class="wide">
+                                会议目标<textarea name="quickPurpose" required placeholder="本次会议要解决什么问题"></textarea>
+                            </label>
+                            <label class="wide">
+                                预期输出<textarea name="quickOutput" required placeholder="决策、纪要、行动计划、风险清单或后续会议"></textarea>
+                            </label>
+                            <label>
+                                会议日期<input type="date" name="quickDate" required>
+                            </label>
+                            <label>
+                                开始时间<input type="time" name="quickStart" required>
+                            </label>
+                            <label>
+                                结束时间<input type="time" name="quickEnd" required>
+                            </label>
+                            <label>
+                                会议时长<input id="quickDuration" readonly placeholder="自动计算">
+                            </label>
+                            <label>
+                                会议形式
+                                <select name="quickFormat">
+                                    <option value="offline">线下会议</option>
+                                    <option value="online">线上会议</option>
+                                    <option value="hybrid">混合会议</option>
+                                </select>
+                            </label>
+                            <label>
+                                会议室 / 地点<input name="quickLocation" placeholder="线下会议填写">
+                            </label>
+                            <label>
+                                线上会议链接<input name="quickLink" placeholder="线上或混合会议填写">
+                            </label>
+                            <label>
+                                发起人<input name="quickInitiator" value="当前创建者">
+                            </label>
+                            <label>
+                                主持人<input name="quickHost" required placeholder="负责会议节奏">
+                            </label>
+                            <label>
+                                记录人<input name="quickRecorder" required placeholder="负责会议记录">
+                            </label>
+                        </div>
+                    </section>
+                    <section class="quick-step" data-quick-panel="1">
+                        <div class="step-intro">
+                            <b>人员、议程和材料</b>
+                            <span>姓名会自动加入常用名单，之后可修改或删除</span>
+                        </div>
+                        <datalist id="peopleSuggestions"></datalist>
+                        <div class="form-grid">
+                            <label class="wide">
+                                必须参加人员<input list="peopleSuggestions" name="quickRequiredPeople" required placeholder="多人请用逗号或顿号分隔">
+                            </label>
+                            <label class="wide">
+                                建议参加人员<input list="peopleSuggestions" name="quickSuggestedPeople" placeholder="建议参加但不影响会议召开">
+                            </label>
+                            <label class="wide">
+                                仅知会人员<input list="peopleSuggestions" name="quickInformedPeople" placeholder="不参会，只接收会议结果">
+                            </label>
+                            <label class="wide">
+                                关键人员时间确认<textarea name="quickTimeConfirmation" placeholder="记录已确认人员、冲突和协调结果"></textarea>
+                            </label>
+                            <label class="wide">
+                                会议议程<textarea name="quickAgenda" required placeholder="每行一个议题：议题名称｜负责人｜预计时长｜预期输出"></textarea>
+                            </label>
+                            <label class="wide">
+                                会前材料<textarea name="quickMaterials" placeholder="背景数据、方案、合同、PPT、历史纪要及提前阅读要求"></textarea>
+                            </label>
+                        </div>
+                    </section>
+                    <section class="quick-step" data-quick-panel="2">
+                        <div class="step-intro">
+                            <b>会前准备检查</b>
+                            <span>只保留创建会议时需要确认的事项</span>
+                        </div>
+                        <div class="premeeting-checklist">
+                            <label>
+                                <input type="checkbox" name="preGoal">已明确会议目标和预期输出
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preType">已确定会议类型
+                            </label>
+                            <label>
+                                <input type="checkbox" name="prePeople">已确定必须参加、建议参加和知会人员
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preTime">已确认关键人员时间
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preSchedule">已确定日期、时间和时长
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preRoom">已预订并检查会议室或线上链接
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preEquipment">已测试投影、网络、音视频和共享屏幕
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preAgenda">已准备会议议程和每项预期输出
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preMaterials">已提前发送材料和会前任务（如有）
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preData">已核对数据、版本、保密和审批要求
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preTemplate">已准备记录模板、行动项台账和风险清单
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preReminder">已设置或发送会议提醒
+                            </label>
+                            <label>
+                                <input type="checkbox" name="preBackup">已准备设备或人员缺席的备用方案
+                            </label>
+                        </div>
+                        <div class="form-grid">
+                            <label>
+                                会前提醒
+                                <select name="quickReminder">
+                                    <option>不设置提醒</option>
+                                    <option>提前一天在工作台提示</option>
+                                    <option>提前一小时在工作台提示</option>
+                                    <option>提前一天和一小时提示</option>
+                                </select>
+                            </label>
+                            <label>
+                                材料发送时间<input type="datetime-local" name="quickMaterialTime">
+                            </label>
+                            <label class="wide">
+                                备用方案<textarea name="quickBackup" placeholder="设备故障、关键人员缺席或场地不可用时如何处理"></textarea>
+                            </label>
+                        </div>
+                        <div id="quickMeetingCheckResult" class="quick-check-result"></div>
+                    </section>
+                </div>
+                <div class="modal-actions quick-actions">
+                    <button type="button" class="secondary" id="quickPrev">上一步</button>
+                    <button type="button" class="secondary" id="quickSaveDraft">保存草稿</button>
+                    <button type="button" class="primary" id="quickNext">下一步</button>
+                    <button type="button" class="primary" id="quickCreateMeeting" hidden>确认创建</button>
+                </div>
+            </form>
+        </dialog>
+        <dialog id="meetingTypesDialog" class="library-dialog">
+            <form>
+                <div class="modal-grabber"></div>
+                <div class="modal-head">
+                    <div>
+                        <h2>会议类型管理</h2>
+                        <p>新增、改名或删除会议类型</p>
+                    </div>
+                    <button type="button" class="close" data-close-dialog aria-label="关闭">×</button>
+                </div>
+                <div class="modal-scroll">
+                    <div id="meetingTypeLibrary" class="library-list"></div>
+                    <button type="button" class="secondary add-row-btn" id="addMeetingType">＋ 添加会议类型</button>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="primary" id="saveMeetingTypes">保存类型设置</button>
+                </div>
+            </form>
+        </dialog>
+        <dialog id="peopleDialog" class="library-dialog">
+            <form>
+                <div class="modal-grabber"></div>
+                <div class="modal-head">
+                    <div>
+                        <h2>常用人员名单</h2>
+                        <p>填写过的姓名自动收录，可修改错别字或删除</p>
+                    </div>
+                    <button type="button" class="close" data-close-dialog aria-label="关闭">×</button>
+                </div>
+                <div class="modal-scroll">
+                    <div id="peopleLibrary" class="library-list"></div>
+                    <button type="button" class="secondary add-row-btn" id="addPerson">＋ 添加人员</button>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="primary" id="savePeople">保存人员名单</button>
+                </div>
+            </form>
+        </dialog>
+        <dialog id="meetingInfoDialog" class="meeting-info-dialog">
+            <form>
+                <div class="modal-grabber"></div>
+                <div class="modal-head">
+                    <div>
+                        <h2 id="meetingInfoTitle">会议详情</h2>
+                    </div>
+                    <button type="button" class="close" data-close-dialog aria-label="关闭">×</button>
+                </div>
+                <div class="modal-scroll" id="meetingInfoContent"></div>
+                <div class="modal-actions">
+                    <button type="button" class="primary" data-close-dialog>关闭</button>
+                </div>
+            </form>
+        </dialog>
+        <dialog id="meetingCompletionDialog" class="completion-dialog">
+            <form>
+                <div class="modal-head">
+                    <div>
+                        <h2>会议创建完成</h2>
+                        <p id="meetingCompletionCopy">会议已加入列表</p>
+                    </div>
+                    <button type="button" class="close" data-close-dialog aria-label="关闭">×</button>
+                </div>
+                <div class="modal-scroll">
+                    <div id="meetingMissingFields" class="missing-fields"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="primary" data-close-dialog>知道了</button>
+                </div>
+            </form>
+        </dialog>
+        <dialog id="profileDialog">
+            <form id="profileForm">
+                <div class="modal-grabber" aria-hidden="true"></div>
+                <div class="modal-head">
+                    <div>
+                        <h2>设置我的称呼</h2>
+                        <p>称呼只用于你的个人工作台</p>
+                    </div>
+                    <button type="button" class="close" data-close-dialog aria-label="关闭">×</button>
+                </div>
+                <div class="modal-scroll">
+                    <div class="form-grid">
+                        <label class="wide">
+                            姓名或称呼<input name="displayName" id="displayName" required placeholder="例如：小周、王助理">
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="secondary" data-close-dialog>取消</button>
+                    <button type="submit" class="primary" id="saveProfile">保存</button>
+                </div>
+            </form>
+        </dialog>
+        <div id="toast" class="toast">已保存到当前浏览器</div>
+        <script src="app.js"></script>
+        <script src="weather.js"></script>
+    </body>
+</html>
