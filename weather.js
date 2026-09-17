@@ -3,15 +3,19 @@ const weatherStatus = document.querySelector('#weatherStatus')
   , weatherCity = document.querySelector('#weatherCity');
 let weatherLocation = null
   , weatherRequest = null
-  , weatherUpdatedAt = 0;
+  , weatherUpdatedAt = 0
+  , locationSelection = 0;
 try {
     const saved = JSON.parse(localStorage.getItem('xujianWeatherLocation'));
     if (saved && Number.isFinite(saved.latitude) && Number.isFinite(saved.longitude) && Math.abs(saved.latitude) <= 90 && Math.abs(saved.longitude) <= 180) {
         weatherLocation = saved;
+        if (saved.name === '当前位置') {
+            weatherLocation = {...saved, name: '定位地点（待获取地名）', source: 'geolocation', nameResolved: false};
+        }
         if (saved.timeZone) {
             new Intl.DateTimeFormat('zh-CN', {timeZone: saved.timeZone});
             currentTimeZone = saved.timeZone;
-            currentPlaceName = saved.name;
+            currentPlaceName = weatherLocation.name;
             refreshCurrentDate()
         }
     }
@@ -70,7 +74,9 @@ async function refreshWeather(place = weatherLocation) {
         document.querySelector('#weatherDescription').textContent = `${place.name} · ${conditions[code] || '天气状况未知'}`;
         document.querySelector('#weatherIcon').textContent = code <= 1 ? (current.is_day ? '☀' : '☾') : code <= 3 ? '☁' : code >= 95 ? 'ϟ' : [71, 73, 75, 77, 85, 86].includes(code) ? '❄' : [45, 48].includes(code) ? '≋' : '☂';
         weatherStatus.textContent = `${new Date().toLocaleTimeString('zh-CN', {timeZone: currentTimeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})} 已更新 · 每 15 分钟自动刷新`;
-        weatherCity.value = place.name === '当前位置' ? '' : place.name
+        if (place.nameResolved === false)
+            weatherStatus.textContent += ' · 地名获取失败，请重新定位或手动选择城市';
+        weatherCity.value = place.source === 'geolocation' ? '' : place.name
     } catch {
         if (weatherRequest !== controller)
             return;
@@ -118,6 +124,7 @@ document.querySelector('#weatherCityForm').onsubmit = async event => {
             option.type = 'button';
             option.textContent = [...new Set([place.name, place.admin1, place.country].filter(Boolean))].join(' · ');
             option.onclick = () => {
+                locationSelection++;
                 weatherResults.hidden = true;
                 refreshWeather({name: place.name, latitude: place.latitude, longitude: place.longitude})
             };
@@ -137,26 +144,67 @@ document.querySelector('#weatherLocate').onclick = () => {
         return
     }
     const button = document.querySelector('#weatherLocate');
+    const selection = ++locationSelection;
     button.disabled = true;
+    weatherRequest?.abort();
+    weatherRequest = null;
     weatherResults.hidden = true;
     weatherStatus.textContent = '正在获取位置，请在浏览器中允许定位…';
-    navigator.geolocation.getCurrentPosition(position => {
-        button.disabled = false;
-        refreshWeather({name: '当前位置', latitude: position.coords.latitude, longitude: position.coords.longitude})
+    navigator.geolocation.getCurrentPosition(async position => {
+        if (selection !== locationSelection) {
+            button.disabled = false;
+            return
+        }
+        const {latitude, longitude} = position.coords
+          , controller = new AbortController()
+          , timeout = setTimeout(() => controller.abort(), 10000);
+        let name = '定位地点（地名暂不可用）'
+          , nameResolved = false;
+        if (selection === locationSelection)
+            weatherStatus.textContent = '已获取坐标，正在解析真实地名…';
+        try {
+            const params = new URLSearchParams({latitude, longitude, localityLanguage: 'zh'})
+              , response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?${params}`, {signal: controller.signal});
+            if (!response.ok)
+                throw new Error('地名解析不可用');
+            const address = await response.json()
+              , names = [...new Set([address.city || address.principalSubdivision, address.locality].filter(value => typeof value === 'string' && value.trim()).map(value => value.trim()))];
+            if (!names.length || /ip/i.test(address.lookupSource || ''))
+                throw new Error('没有可靠的定位地名');
+            name = names.join(' · ');
+            nameResolved = true
+        } catch {
+            // 保留坐标天气，但不把未知地名伪装成真实地址。
+        } finally {
+            clearTimeout(timeout);
+            button.disabled = false
+        }
+        if (selection === locationSelection)
+            await refreshWeather({name, latitude, longitude, source: 'geolocation', nameResolved})
     }, error => {
         button.disabled = false;
+        if (selection !== locationSelection)
+            return;
         weatherStatus.textContent = error.code === 1 ? '未获得定位授权，请手动输入城市' : '定位超时或不可用，请重试或手动输入城市'
     }, {timeout: 10000, maximumAge: 300000, enableHighAccuracy: false})
 };
 
 if (weatherLocation)
     refreshWeather();
+if (weatherLocation?.nameResolved === false && navigator.permissions)
+    navigator.permissions.query({name: 'geolocation'}).then(permission => {
+        if (permission.state === 'granted' && locationSelection === 0)
+            document.querySelector('#weatherLocate').click()
+    }).catch(() => {});
 setInterval(() => {
-    if (!document.hidden && !weatherRequest)
+    if (!document.hidden && !weatherRequest && !document.querySelector('#weatherLocate').disabled)
         refreshWeather()
 }, 15 * 60 * 1000);
 document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && !weatherRequest && Date.now() - weatherUpdatedAt >= 15 * 60 * 1000)
+    if (!document.hidden && !weatherRequest && !document.querySelector('#weatherLocate').disabled && Date.now() - weatherUpdatedAt >= 15 * 60 * 1000)
         refreshWeather()
 });
-window.addEventListener('online', () => refreshWeather());
+window.addEventListener('online', () => {
+    if (!document.querySelector('#weatherLocate').disabled)
+        refreshWeather()
+});

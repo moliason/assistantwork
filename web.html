@@ -122,7 +122,7 @@
                             <div class="orbit-art" aria-hidden="true"><i></i><i></i><i></i></div>
                         </article>
                         <article class="weather-card">
-                            <div class="weather-top"><span class="eyebrow">此刻天气</span><button type="button" id="weatherLocate" class="text-btn">◎ 使用定位</button></div>
+                            <div class="weather-top"><span class="eyebrow">此刻天气</span><button type="button" id="weatherLocate" class="text-btn" title="授权后将坐标用于天气查询及真实地名解析">◎ 使用定位</button></div>
                             <div class="weather-main"><span id="weatherIcon" aria-hidden="true">◌</span><div><b id="weatherTemperature">—°</b><span id="weatherDescription">选择城市，了解今日天气</span></div></div>
                             <form id="weatherCityForm" class="weather-city-form"><label for="weatherCity" class="sr-only">天气城市</label><input id="weatherCity" placeholder="输入城市，如：上海" required maxlength="60" autocomplete="off"><button type="submit" aria-label="查询城市天气">查询 ↗</button></form>
                             <div id="weatherResults" class="weather-results" hidden></div>
@@ -1210,6 +1210,6 @@
         </dialog>
         <div id="toast" class="toast">已保存到当前浏览器</div>
         <script src="app.js"></script>
-        <script src="weather.js"></script>
+        <script src="weather.js?v=place-name-20260917"></script>
     </body>
 </html>

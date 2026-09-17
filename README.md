@@ -9,6 +9,7 @@
 - 未设置地点时，日期、星期、时间和问候语使用设备本地时间；设置主页天气地点后，按该地点的时区自动更新。跨当地午夜自动更新“今日”、日历和新建表单的默认日期，不修改历史记录或正在编辑的内容。
 - 日历按实际月份生成，支持闰年及跨年周视图。
 - 在天气卡片输入城市并选择搜索结果，或点击“使用定位”并授权。位置选择会保存在本机浏览器。
+- 使用定位后，通过 [BigDataCloud 客户端地名解析服务](https://www.bigdatacloud.com/free-api/free-reverse-geocode-to-city-api) 将浏览器坐标解析为实际城市／区县名称，主页与行程表同步使用该名称。坐标会发送给天气和地名服务；不会用 IP 推测的地点或虚构门牌代替真实定位。地名服务不可用时保留坐标天气并明确提示重新定位。
 - 天气每 15 分钟更新；返回页面、网络恢复时也会刷新过期数据。请求失败时显示不可用提示，不将旧温度伪装成实时天气。
 - 天气和城市查询需要联网，数据来自 [Open-Meteo](https://open-meteo.com/en/docs) 和其[地理编码接口](https://open-meteo.com/en/docs/geocoding-api)。定位是否可用取决于浏览器和系统权限，部署时使用 HTTPS；本地也可通过 localhost 访问。定位不可用时仍能手动查询城市。
 - 测试账号的初始示例日期在首次使用时确定，不会每天把旧任务挪到今天；已有保存数据保持不变。
@@ -38,6 +39,7 @@ node --check weather.js
 node tests/smoke.cjs
 node tests/itinerary.cjs
 node tests/ui-layout.cjs
+node tests/location.cjs
 ```
 
 可用环境变量 `PLAYWRIGHT_MODULE` 指向已有 Playwright 模块，用 `BROWSER_EXECUTABLE` 指向已有 Chromium 浏览器，无需改动项目依赖。测试使用隔离的浏览器上下文，不影响日常使用的数据。

@@ -115,8 +115,10 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         await page.locator('#weatherLocate').click();
         assert.match(await page.locator('#weatherStatus').textContent(), /未获得定位授权/);
         await page.evaluate(() => Object.defineProperty(navigator, 'geolocation', {configurable: true, value: {getCurrentPosition: ok => ok({coords: {latitude: 31.23, longitude: 121.47}})}}));
+        await page.route('https://api.bigdatacloud.net/**', route => route.fulfill({contentType: 'application/json', body: JSON.stringify({city: '上海市', locality: '黄浦区', lookupSource: 'reverseGeocoding'})}));
         await page.locator('#weatherLocate').click();
-        await page.waitForFunction(() => document.querySelector('#weatherDescription').textContent.includes('当前位置'));
+        await page.waitForFunction(() => document.querySelector('#weatherDescription').textContent.includes('上海市 · 黄浦区'));
+        assert.equal(await page.locator('#itineraryClockPlace').textContent(), '上海市 · 黄浦区 · 当地时间');
         console.log('PASS missing city, service failure, denied and successful geolocation');
 
         for (const width of [1440, 1024, 768, 390, 320]) {
