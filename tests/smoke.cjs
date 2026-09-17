@@ -18,7 +18,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         await page.reload();
         assert.match(await page.title(), /PURR PATCH/);
         assert.equal(await page.locator('.brand-logo img').count(), 3);
-        assert.equal(await page.locator('.brand-logo img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth === 1280)), true);
+        assert.equal(await page.locator('.brand-logo img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth === 2048 && image.naturalHeight === 1171)), true);
         assert.equal(await page.locator('.sidebar').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(255, 255, 255)');
         assert.equal(await page.locator('#nav .active').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(234, 242, 250)');
         console.log('PASS original logo loads in all 3 placements, white sidebar and pale-blue active state');

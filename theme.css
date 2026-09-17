@@ -19,8 +19,8 @@ button:disabled { cursor: wait; opacity: .6; }
 .sidebar { width: 220px; padding: 36px 18px 24px; background: var(--nav); color: var(--ink); border-right: 1px solid var(--line); }
 .sidebar::-webkit-scrollbar-thumb { background: #c6d5e2; }
 .brand { padding: 0 0 34px; flex-direction: column; gap: 9px; }
-.brand-logo { position: relative; width: 100%; aspect-ratio: 2.3; overflow: hidden; border-radius: 10px; background: #f4f5f7; flex-shrink: 0; }
-.brand-logo img { position: absolute; width: 106%; max-width: none; height: auto; left: -3%; top: 50%; transform: translateY(-52%); }
+.brand-logo { position: relative; width: 100%; aspect-ratio: 2.3; overflow: hidden; border-radius: 10px; background: #ffffff; flex-shrink: 0; }
+.brand-logo img { position: absolute; width: 106%; max-width: none; height: auto; left: -3%; top: 50%; transform: translateY(-47%); }
 .login-brand { flex-direction: column; gap: 13px; align-items: center; }
 .login-brand .brand-logo { width: 220px; max-width: 100%; border-radius: 13px; }
 .login-brand>small { color: var(--muted); font-size: 11px; letter-spacing: 3px; }
