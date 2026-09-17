@@ -22,6 +22,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         await page.route('https://geocoding-api.open-meteo.com/**', route => route.fulfill({contentType: 'application/json', body: JSON.stringify({results: [{name: '杭州市', latitude: 30.25, longitude: 120.15}]})}));
         await page.goto(process.env.TEST_URL || pathToFileURL(path.resolve(__dirname, '../web.html')).href);
         await page.locator('[data-demo-login="demo"]').click();
+        await page.waitForFunction(() => typeof refreshWeather === 'function' && document.querySelector('#weatherLocate').onclick);
         await page.locator('#weatherLocate').click();
         await page.waitForFunction(() => document.querySelector('#itineraryClockPlace').textContent === '上海市 · 黄浦区 · 当地时间');
         assert.match(await page.locator('#weatherDescription').textContent(), /上海市 · 黄浦区/);
