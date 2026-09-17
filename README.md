@@ -37,8 +37,11 @@ node --check weather.js
 ```sh
 node tests/smoke.cjs
 node tests/itinerary.cjs
+node tests/ui-layout.cjs
 ```
 
 可用环境变量 `PLAYWRIGHT_MODULE` 指向已有 Playwright 模块，用 `BROWSER_EXECUTABLE` 指向已有 Chromium 浏览器，无需改动项目依赖。测试使用隔离的浏览器上下文，不影响日常使用的数据。
+
+弹窗布局测试覆盖全部 8 类弹窗、会议各步骤、长列表及 9 种窗口尺寸，分别检查正文滚动前后按钮的完整边界与点击命中；另外实际执行保存、取消、重置和向导操作，并检查提示消息不会拦截导航点击。`TEST_URL` 可指定已部署网址用于线上复测。
 
 覆盖本地日期、跨午夜、闰年、跨年周视图、新建日程、完成任务、天气定时更新与异常恢复、定位授权、刷新恢复、空账号，以及 320–1440px 下五个模块的横向溢出检查。截图输出到系统临时目录。

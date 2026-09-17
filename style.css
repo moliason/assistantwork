@@ -771,12 +771,18 @@ dialog form {
 
 .modal-head {
     display: flex;
-    justify-content: space-between
+    justify-content: space-between;
+    gap: 12px
+}
+
+.modal-head>div {
+    min-width: 0
 }
 
 .modal-head h2 {
     margin: 0 0 5px;
-    font-size: 19px
+    font-size: 19px;
+    overflow-wrap: anywhere
 }
 
 .modal-head p {
@@ -847,7 +853,8 @@ dialog form {
     opacity: 0;
     transform: translateY(20px);
     transition: .25s;
-    z-index: 50
+    z-index: 50;
+    pointer-events: none
 }
 
 .toast.show {
@@ -1752,14 +1759,14 @@ dialog form {
 }
 
 dialog {
-    max-height: min(88dvh,760px);
+    --dialog-max-height: min(88dvh,760px);
+    max-height: var(--dialog-max-height);
     overflow: hidden
 }
 
 dialog form {
     display: flex;
     flex-direction: column;
-    max-height: min(88dvh,760px);
     padding: 0
 }
 
@@ -1854,13 +1861,9 @@ dialog form {
     dialog {
         width: 100%;
         max-width: none;
-        max-height: 92dvh;
+        --dialog-max-height: 92dvh;
         margin: auto 0 0;
         border-radius: 20px 20px 0 0
-    }
-
-    dialog form {
-        max-height: 92dvh
     }
 
     .modal-grabber {
@@ -2256,11 +2259,7 @@ dialog form {
 /* 八步新建会议向导 */
 .meeting-wizard-dialog {
     width: min(920px,calc(100% - 28px));
-    max-height: 92dvh
-}
-
-.meeting-wizard-dialog form {
-    max-height: 92dvh
+    --dialog-max-height: 92dvh
 }
 
 .wizard-progress {
@@ -2739,11 +2738,7 @@ dialog form {
 
 .quick-meeting-dialog {
     width: min(760px,calc(100% - 28px));
-    max-height: 92dvh
-}
-
-.quick-meeting-dialog form {
-    max-height: 92dvh
+    --dialog-max-height: 92dvh
 }
 
 .quick-step-tabs {
@@ -3260,7 +3255,7 @@ dialog form {
 
 .meeting-info-dialog {
     width: min(720px,calc(100% - 24px));
-    max-height: 90dvh
+    --dialog-max-height: 90dvh
 }
 
 .meeting-info-grid {
@@ -3408,7 +3403,9 @@ dialog form {
 dialog form {
     display: flex!important;
     flex-direction: column;
-    max-height: min(90dvh,820px);
+    max-height: calc(var(--dialog-max-height) - 2px);
+    min-height: 0;
+    margin: 0;
     overflow: hidden
 }
 
@@ -3433,6 +3430,7 @@ dialog form {
 
 .modal-actions {
     position: relative;
+    flex-wrap: wrap;
     background: white;
     padding-top: 12px;
     border-top: 1px solid #edf0f5
@@ -3488,10 +3486,6 @@ dialog form {
 
     .summary-textarea,.summary-textarea::placeholder {
         font-size: 12px!important
-    }
-
-    dialog form {
-        max-height: 94dvh
     }
 
     .library-dialog form,.meeting-info-dialog form {
@@ -3607,11 +3601,8 @@ dialog form {
 }
 
 .completion-dialog {
-    width: min(430px,calc(100% - 24px))
-}
-
-.completion-dialog form {
-    max-height: 76dvh
+    width: min(430px,calc(100% - 24px));
+    --dialog-max-height: 76dvh
 }
 
 .missing-fields {
@@ -3635,4 +3626,31 @@ dialog form {
     background: #edf9f4;
     border-radius: 10px;
     padding: 12px
+}
+
+/* 低高度窗口中保留正文滚动空间与完整操作栏。 */
+@media(max-height: 480px) {
+    .modal-head {
+        padding: 10px 16px 8px
+    }
+
+    .modal-head h2 {
+        font-size: 16px;
+        max-height: 3em;
+        overflow-y: auto
+    }
+
+    .modal-head p {
+        margin: 0;
+        font-size: 11px
+    }
+
+    .modal-actions {
+        padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+        gap: 6px
+    }
+
+    .wizard-progress,.quick-step-tabs {
+        padding-bottom: 8px
+    }
 }
