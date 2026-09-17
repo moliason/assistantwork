@@ -121,13 +121,13 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
         for (const width of [1440, 1024, 768, 390, 320]) {
             await page.setViewportSize({width, height: 900});
-            for (const view of ['dashboard', 'calendar', 'tasks', 'meetings', 'learning']) {
+            for (const view of ['dashboard', 'calendar', 'itinerary', 'tasks', 'meetings', 'learning']) {
                 await page.evaluate(id => switchView(id), view);
                 assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${view} overflows at ${width}px`);
             }
         }
         assert.deepEqual(errors, []);
-        console.log('PASS all 5 modules at 1440/1024/768/390/320px; no JavaScript errors');
+        console.log('PASS all 6 modules at 1440/1024/768/390/320px; no JavaScript errors');
         await page.evaluate(() => switchView('dashboard'));
         await page.setViewportSize({width: 1440, height: 1080});
         await page.screenshot({path: path.join(os.tmpdir(), 'xujian-tested-desktop.png'), fullPage: true});

@@ -14,10 +14,13 @@ const activeAccount = localStorage.getItem('xujianActiveAccount');
 const initialNow = new Date();
 var baseDate = `${initialNow.getFullYear()}-${String(initialNow.getMonth() + 1).padStart(2, '0')}-${String(initialNow.getDate()).padStart(2, '0')}`
   , dashboardDate = baseDate
+  , itineraryDate = baseDate
   , taskDate = baseDate
   , taskPriorityFilter = 'all'
   , calendarMode = 'month'
   , itineraryForecast = null
+  , currentTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  , currentPlaceName = ''
   , cleanAccountKey = activeAccount === 'fresh' ? 'fresh_v2' : activeAccount || 'guest';
 const demoDate = localStorage.getItem('xujianDemoDate') || baseDate;
 if (activeAccount === 'demo')
@@ -167,6 +170,7 @@ let activeMeeting = 0;
 let perspective = 'mine';
 const modulePerspectives = {
     calendar: 'mine',
+    itinerary: 'mine',
     tasks: 'mine',
     meetings: 'mine'
 };
@@ -201,17 +205,18 @@ function renderTimeline() {
     renderDashboardStats()
 }
 function renderItinerary() {
-    const date = new Date(`${dashboardDate}T00:00:00`)
+    const date = new Date(`${itineraryDate}T00:00:00`)
       , body = document.querySelector('#itineraryRows')
-      , forecast = itineraryForecast?.days.find(day => day.date === dashboardDate)
+      , forecast = itineraryForecast?.days.find(day => day.date === itineraryDate)
       , rows = schedule.map((item, index) => {
         const times = (item.time || '').match(/\d{2}:\d{2}/g) || []
           , start = item.timeMode ? item.startTime || '' : times[0] || ''
           , end = item.timeMode ? item.endTime || '' : times[1] || '';
         return {...item, index, start, end}
-    }).filter(item => (!item.date || item.date === dashboardDate) && (perspective === 'mine' || item.owner === 'boss')).sort((a, b) => (a.start || a.end || '99:00').localeCompare(b.start || b.end || '99:00'));
-    document.querySelector('#itineraryTitle').textContent = `${dashboardDate.replaceAll('-', '/')}（星期${'日一二三四五六'[date.getDay()]}）日程安排`;
-    document.querySelector('#itineraryWeather').textContent = forecast ? `${itineraryForecast.place} · 当日预报\n${forecast.summary}` : itineraryForecast ? '所选日期暂无天气预报，不使用今日天气代替。' : '天气数据未获取，请在上方天气卡片设置城市或重试。';
+    }).filter(item => (!item.date || item.date === itineraryDate) && (modulePerspectives.itinerary === 'mine' || item.owner === 'boss')).sort((a, b) => (a.start || a.end || '99:00').localeCompare(b.start || b.end || '99:00'));
+    document.querySelector('#itineraryDateLabel').textContent = dateLabel(itineraryDate);
+    document.querySelector('#itineraryTitle').textContent = `${itineraryDate.replaceAll('-', '/')}（星期${'日一二三四五六'[date.getDay()]}）日程安排`;
+    document.querySelector('#itineraryWeather').textContent = forecast ? `${itineraryForecast.place} · 当日预报\n${forecast.summary}` : itineraryForecast ? '所选日期暂无天气预报，不使用今日天气代替。' : '天气数据未获取，请点击“设置天气城市”选择城市或重试。';
     body.replaceChildren();
     rows.forEach((item, rowIndex) => {
         const row = document.createElement('tr')
@@ -229,7 +234,7 @@ function renderItinerary() {
         }
         row.dataset.category = category;
         row.setAttribute('aria-label', labels[category]);
-        const values = [rowIndex + 1, dashboardDate.replaceAll('-', '/'), period, item.start || '—', item.end || '—', duration, item.scheduleType || '未填写', item.title, item.participants || '未填写', item.place || '未填写'];
+        const values = [rowIndex + 1, itineraryDate.replaceAll('-', '/'), period, item.start || '—', item.end || '—', duration, item.scheduleType || '未填写', item.title, item.participants || '未填写', item.place || '未填写'];
         values.forEach((value, column) => {
             if (column === 1 && rowIndex > 0)
                 return;
@@ -378,6 +383,7 @@ function renderReminders() {
 const titles = {
     dashboard: ['你好', '今天的日程、任务和会议已为你整理好'],
     calendar: ['日程日历', '按日、周、月统筹所有安排'],
+    itinerary: ['行程表', '按日期查看行程、参与人员与地点'],
     boss: ['老板日程', '单独查看老板的全部安排'],
     tasks: ['任务清单', '把每个时间节点稳稳落实'],
     meetings: ['会议管理', '会前、会中、会后完整闭环'],
@@ -389,6 +395,8 @@ function switchView(id) {
     document.querySelector('#pageTitle').textContent = titles[id][0];
     document.querySelector('#pageSub').textContent = titles[id][1];
     document.querySelector('#dashboardCreateActions').hidden = id !== 'dashboard';
+    if (id === 'itinerary')
+        renderItinerary();
     window.scrollTo(0, 0)
 }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => switchView(b.dataset.view));
@@ -1103,7 +1111,9 @@ document.querySelectorAll('[data-module-perspective]').forEach(button => button.
     modulePerspectives[module] = value;
     document.querySelectorAll(`[data-module-perspective="${module}"]`).forEach(x => x.classList.toggle('active', x === button));
     const copy = document.querySelector(`[data-perspective-copy="${module}"]`);
-    copy.textContent = value === 'boss' ? `当前仅显示老板${module === 'calendar' ? '日程' : module === 'tasks' ? '任务' : '会议'}` : `同时显示我的和老板的内容，老板${module === 'calendar' ? '日程' : module === 'tasks' ? '任务' : '会议'}重点突出`;
+    copy.textContent = value === 'boss' ? `当前仅显示老板${['calendar', 'itinerary'].includes(module) ? '日程' : module === 'tasks' ? '任务' : '会议'}` : `同时显示我的和老板的内容，老板${['calendar', 'itinerary'].includes(module) ? '日程' : module === 'tasks' ? '任务' : '会议'}重点突出`;
+    if (module === 'itinerary')
+        renderItinerary();
     if (module === 'calendar')
         renderCalendar();
     if (module === 'tasks')
@@ -1119,7 +1129,7 @@ let displayName = localStorage.getItem(profileStorageKey) || '';
 function renderProfile() {
     document.querySelector('#profileName').textContent = displayName || '我的工作台';
     document.querySelector('#avatarText').textContent = displayName ? displayName.slice(0, 1) : '助';
-    const hour = new Date().getHours()
+    const hour = Number(new Date().toLocaleTimeString('en-GB', {timeZone: currentTimeZone, hour: '2-digit', hourCycle: 'h23'}))
       , greeting = hour < 6 ? '夜深了' : hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
     titles.dashboard[0] = displayName ? `${greeting}，${displayName}` : greeting;
     if (document.querySelector('#dashboard').classList.contains('active'))
@@ -1147,6 +1157,7 @@ document.querySelector('#searchBtn').onclick = () => {
       , labels = {
         dashboard: '全部内容',
         calendar: '日程和会议',
+        itinerary: '行程',
         tasks: '任务',
         meetings: '会议',
         learning: '学习记录'
@@ -1156,6 +1167,7 @@ document.querySelector('#searchBtn').onclick = () => {
         return;
     const pools = {
         calendar: [...schedule, ...meetings],
+        itinerary: schedule,
         tasks: tasks,
         meetings: meetings,
         learning: learningRecords,
@@ -1856,21 +1868,25 @@ document.querySelector('#dashboardToday').onclick = () => {
     renderTimeline()
 }
 ;
-document.querySelectorAll('[data-dashboard-layout]').forEach(button => button.onclick = () => {
-    const table = button.dataset.dashboardLayout === 'table';
-    document.querySelector('#itineraryPanel').hidden = !table;
-    document.querySelector('.dashboard-content-grid').hidden = table;
-    document.querySelectorAll('[data-dashboard-layout]').forEach(option => {
-        const active = option === button;
-        option.classList.toggle('active', active);
-        option.setAttribute('aria-pressed', String(active))
-    });
-    if (table)
-        renderItinerary()
-});
+document.querySelector('#itineraryPrevDay').onclick = () => {
+    itineraryDate = shiftDate(itineraryDate, -1);
+    renderItinerary()
+};
+document.querySelector('#itineraryNextDay').onclick = () => {
+    itineraryDate = shiftDate(itineraryDate, 1);
+    renderItinerary()
+};
+document.querySelector('#itineraryToday').onclick = () => {
+    itineraryDate = baseDate;
+    renderItinerary()
+};
+document.querySelector('#itineraryWeatherSettings').onclick = () => {
+    switchView('dashboard');
+    document.querySelector('#weatherCity').focus()
+};
 document.querySelector('#itineraryCreate').onclick = () => {
     openCreator('schedule');
-    eventForm.elements.date.value = dashboardDate
+    eventForm.elements.date.value = itineraryDate
 };
 document.querySelector('#taskPrevDay').onclick = () => {
     taskDate = shiftDate(taskDate, -1);
@@ -1945,11 +1961,19 @@ renderTasks();
 renderCalendar();
 function refreshCurrentDate() {
     const now = new Date()
-      , date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    document.querySelector('#liveDate').textContent = now.toLocaleDateString('zh-CN', {year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'});
+      , parts = new Intl.DateTimeFormat('en-US', {timeZone: currentTimeZone, year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(now)
+      , date = ['year', 'month', 'day'].map(type => parts.find(part => part.type === type).value).join('-')
+      , shownDate = now.toLocaleDateString('zh-CN', {timeZone: currentTimeZone, year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'});
+    document.querySelector('#liveDate').textContent = shownDate;
     document.querySelector('#liveDate').dateTime = date;
-    document.querySelector('#liveTime').textContent = now.toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit', hour12: false});
+    document.querySelector('#liveTime').textContent = now.toLocaleTimeString('zh-CN', {timeZone: currentTimeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'});
     document.querySelector('#liveTime').dateTime = now.toISOString();
+    document.querySelector('#livePlace').textContent = currentPlaceName ? `${currentPlaceName}时间` : '本机时间';
+    document.querySelector('#itineraryClockPlace').textContent = currentPlaceName ? `${currentPlaceName} · 当地时间` : '本机时间 · 尚未设置地点';
+    document.querySelector('#itineraryClockDate').textContent = shownDate;
+    document.querySelector('#itineraryClockDate').dateTime = date;
+    document.querySelector('#itineraryLiveTime').textContent = now.toLocaleTimeString('zh-CN', {timeZone: currentTimeZone, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'});
+    document.querySelector('#itineraryLiveTime').dateTime = now.toISOString();
     renderProfile();
     if (date === baseDate)
         return;
@@ -1957,6 +1981,8 @@ function refreshCurrentDate() {
         dashboardDate = date;
     if (taskDate === baseDate)
         taskDate = date;
+    if (itineraryDate === baseDate)
+        itineraryDate = date;
     baseDate = date;
     renderTimeline();
     renderTasks();

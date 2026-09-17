@@ -18,8 +18,8 @@ button:disabled { cursor: wait; opacity: .6; }
 .app-shell { grid-template-columns: 220px minmax(0,1fr); }
 .sidebar { width: 220px; padding: 36px 18px 24px; background: #223c54; }
 .brand { padding: 0 0 34px; flex-direction: column; gap: 9px; }
-.brand-logo { position: relative; width: 100%; aspect-ratio: 2.3; overflow: hidden; border-radius: 10px; background: #89acb4; flex-shrink: 0; }
-.brand-logo img { position: absolute; width: 106%; max-width: none; height: auto; left: -3%; top: 50%; transform: translateY(-50%); }
+.brand-logo { position: relative; width: 100%; aspect-ratio: 2.3; overflow: hidden; border-radius: 10px; background: #f4f5f7; flex-shrink: 0; }
+.brand-logo img { position: absolute; width: 106%; max-width: none; height: auto; left: -3%; top: 50%; transform: translateY(-52%); }
 .login-brand { flex-direction: column; gap: 13px; align-items: center; }
 .login-brand .brand-logo { width: 220px; max-width: 100%; border-radius: 13px; }
 .login-brand>small { color: var(--muted); font-size: 11px; letter-spacing: 3px; }
@@ -62,7 +62,8 @@ header p { font-size: 12px; }
 .today-card>p { position: relative; z-index: 1; color: #707d8a; font-size: 12px; margin: 13px 0 25px; }
 .live-badge { font-size: 9px; color: #566676; background: #ffffff75; border: 1px solid #ffffff90; border-radius: 20px; padding: 5px 7px; white-space: nowrap; }
 .live-badge i { display: inline-block; background: #5c7a98; width: 5px; height: 5px; border-radius: 50%; margin-right: 5px; }
-.today-bottom { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; margin-top: auto; }
+.today-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; position: relative; z-index: 1; margin-top: auto; }
+#livePlace { font-size: 10px; color: var(--muted); }
 #liveDate { font-size: 12px; letter-spacing: .3px; }
 #liveTime { font-size: 20px; font-weight: 400; font-variant-numeric: tabular-nums; border-left: 1px solid #bbcfdf; padding-left: 16px; }
 .orbit-art { position: absolute; right: -40px; bottom: -70px; width: 235px; height: 235px; opacity: .3; pointer-events: none; }
@@ -237,9 +238,11 @@ dialog::backdrop { background: #1f324945; backdrop-filter: blur(4px); }
     .task-toolbar { flex-wrap: wrap; gap: 12px; }
     .login-card { padding: 28px 24px; }
 }
-.dashboard-date-nav .itinerary-switch { margin-left: auto; display: flex; gap: 3px; }
-.dashboard-date-nav .itinerary-switch button { border: 0; background: transparent; font-size: 11px; white-space: nowrap; }
-.dashboard-date-nav .itinerary-switch button.active { background: white; color: #345e85; box-shadow: 0 1px 4px #243d5612; }
+.dashboard-date-nav .itinerary-shortcut { margin-left: auto; font-size: 11px; }
+.itinerary-clock { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 0 0 18px; color: #617e99; font-size: 12px; }
+.itinerary-clock>span { background: #edf3f9; border-radius: 20px; padding: 6px 11px; }
+.itinerary-clock time:last-of-type { font-size: 22px; font-variant-numeric: tabular-nums; color: #345e85; }
+.itinerary-clock small { margin-left: auto; font-size: 10px; color: var(--muted); }
 .itinerary-panel { padding: 24px; }
 .itinerary-panel .panel-head { align-items: center; }
 .itinerary-panel .primary { font-size: 12px; white-space: nowrap; }
@@ -270,9 +273,10 @@ dialog::backdrop { background: #1f324945; backdrop-filter: blur(4px); }
 .itinerary-legend b { font-weight: 500; margin-right: 4px; }
 .itinerary-legend span { padding: 6px 10px; border-radius: 5px; color: #405064; }
 @media(max-width: 720px) {
-    #dashboard>.dashboard-date-nav { flex-wrap: wrap; }
-    .dashboard-date-nav .itinerary-switch { width: 100%; margin-left: 0; margin-top: 5px; }
-    .dashboard-date-nav .itinerary-switch button { flex: 1; padding: 9px; }
+    #dashboard>.dashboard-date-nav,#itinerary>.dashboard-date-nav { flex-wrap: wrap; }
+    .dashboard-date-nav .itinerary-shortcut { width: 100%; margin-left: 0; margin-top: 5px; padding: 9px; }
+    .itinerary-clock { gap: 9px; }
+    .itinerary-clock small { width: 100%; margin-left: 0; }
     .itinerary-panel { padding: 17px 12px; }
     .itinerary-title { font-size: 14px; padding: 14px 8px; }
     .itinerary-weather { padding: 12px; font-size: 11px; }

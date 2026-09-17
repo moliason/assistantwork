@@ -6,8 +6,15 @@ let weatherLocation = null
   , weatherUpdatedAt = 0;
 try {
     const saved = JSON.parse(localStorage.getItem('xujianWeatherLocation'));
-    if (saved && Number.isFinite(saved.latitude) && Number.isFinite(saved.longitude) && Math.abs(saved.latitude) <= 90 && Math.abs(saved.longitude) <= 180)
-        weatherLocation = saved
+    if (saved && Number.isFinite(saved.latitude) && Number.isFinite(saved.longitude) && Math.abs(saved.latitude) <= 90 && Math.abs(saved.longitude) <= 180) {
+        weatherLocation = saved;
+        if (saved.timeZone) {
+            new Intl.DateTimeFormat('zh-CN', {timeZone: saved.timeZone});
+            currentTimeZone = saved.timeZone;
+            currentPlaceName = saved.name;
+            refreshCurrentDate()
+        }
+    }
 } catch {
     localStorage.removeItem('xujianWeatherLocation')
 }
@@ -25,14 +32,18 @@ async function refreshWeather(place = weatherLocation) {
           , response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, {signal: controller.signal});
         if (!response.ok)
             throw new Error('天气服务暂不可用');
-        const {current, daily} = await response.json();
+        const {current, daily, timezone} = await response.json();
         if (!current || !Number.isFinite(current.temperature_2m) || !Number.isFinite(current.weather_code))
             throw new Error('天气数据不完整');
         if (weatherRequest !== controller)
             return;
         const code = current.weather_code
           , conditions = {0: '晴', 1: '晴间多云', 2: '多云', 3: '阴', 45: '雾', 48: '雾凇', 51: '小毛毛雨', 53: '毛毛雨', 55: '强毛毛雨', 56: '冻毛毛雨', 57: '强冻毛毛雨', 61: '小雨', 63: '中雨', 65: '大雨', 66: '冻雨', 67: '强冻雨', 71: '小雪', 73: '中雪', 75: '大雪', 77: '米雪', 80: '小阵雨', 81: '阵雨', 82: '强阵雨', 85: '阵雪', 86: '强阵雪', 95: '雷雨', 96: '雷雨伴冰雹', 99: '强雷雨伴冰雹'};
-        weatherLocation = place;
+        const placeTimeZone = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        new Intl.DateTimeFormat('zh-CN', {timeZone: placeTimeZone});
+        currentTimeZone = placeTimeZone;
+        currentPlaceName = place.name;
+        weatherLocation = {...place, timeZone: placeTimeZone};
         weatherUpdatedAt = Date.now();
         itineraryForecast = {
             place: place.name,
@@ -52,12 +63,13 @@ async function refreshWeather(place = weatherLocation) {
                 return [{date, summary: details.join(' · ')}]
             })
         };
+        refreshCurrentDate();
         renderItinerary();
-        localStorage.setItem('xujianWeatherLocation', JSON.stringify(place));
+        localStorage.setItem('xujianWeatherLocation', JSON.stringify(weatherLocation));
         document.querySelector('#weatherTemperature').textContent = `${Math.round(current.temperature_2m)}°`;
         document.querySelector('#weatherDescription').textContent = `${place.name} · ${conditions[code] || '天气状况未知'}`;
         document.querySelector('#weatherIcon').textContent = code <= 1 ? (current.is_day ? '☀' : '☾') : code <= 3 ? '☁' : code >= 95 ? 'ϟ' : [71, 73, 75, 77, 85, 86].includes(code) ? '❄' : [45, 48].includes(code) ? '≋' : '☂';
-        weatherStatus.textContent = `${new Date().toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit', hour12: false})} 已更新 · 每 15 分钟自动刷新`;
+        weatherStatus.textContent = `${new Date().toLocaleTimeString('zh-CN', {timeZone: currentTimeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})} 已更新 · 每 15 分钟自动刷新`;
         weatherCity.value = place.name === '当前位置' ? '' : place.name
     } catch {
         if (weatherRequest !== controller)
