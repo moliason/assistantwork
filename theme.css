@@ -266,6 +266,10 @@ dialog::backdrop { background: #1f324945; backdrop-filter: blur(4px); }
 .itinerary-table th:nth-child(7)[rowspan] { width: 125px; }
 .itinerary-table button { background: transparent; color: inherit; border: 0; font: inherit; font-weight: 550; padding: 0; cursor: pointer; text-align: center; }
 .itinerary-table button:hover { text-decoration: underline; text-underline-offset: 4px; }
+.itinerary-table .itinerary-actions { position: sticky; right: 0; width: 80px; background: #f8fafc; box-shadow: -2px 0 4px #30435515; }
+.itinerary-table .itinerary-actions button { color: #a32c39; min-width: 52px; min-height: 44px; border-radius: 6px; }
+.itinerary-table .itinerary-actions button:hover { background: #fcebee; }
+.itinerary-table .itinerary-actions button:focus-visible { outline: 2px solid #a32c39; outline-offset: -2px; }
 .itinerary-table .itinerary-date { background: white; font-variant-numeric: tabular-nums; }
 .itinerary-table [data-category="work"],.itinerary-legend [data-category="work"] { background: #fff2cd; }
 .itinerary-table [data-category="life"],.itinerary-legend [data-category="life"] { background: #dfeef9; }

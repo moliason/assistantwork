@@ -254,12 +254,20 @@ function renderItinerary() {
                 cell.textContent = value;
             row.append(cell)
         });
+        const actions = row.insertCell();
+        actions.className = 'itinerary-actions';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.textContent = '删除';
+        remove.setAttribute('aria-label', `删除行程：${item.title}`);
+        remove.onclick = () => deleteSchedule(item.index);
+        actions.append(remove);
         body.append(row)
     });
     if (!rows.length) {
         const row = body.insertRow()
           , cell = row.insertCell();
-        cell.colSpan = 10;
+        cell.colSpan = 11;
         cell.className = 'itinerary-empty';
         cell.textContent = '这一天暂无行程，点击“添加行程”开始安排。'
     }
@@ -485,7 +493,7 @@ function deleteSchedule(index) {
     if (activeAccount)
         localStorage.setItem(`scheduleData_${activeAccount}`, JSON.stringify(schedule));
     if (activeAccount === 'fresh')
-        localStorage.setItem('xujianFreshSchedule', JSON.stringify(schedule));
+        localStorage.setItem('scheduleData_fresh_v2', JSON.stringify(schedule));
     renderTimeline();
     renderCalendar();
     showToast('日程已删除')
