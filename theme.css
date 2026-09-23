@@ -203,6 +203,7 @@ dialog::backdrop { background: #1f324945; backdrop-filter: blur(4px); }
     .today-bottom { flex-wrap: wrap; gap: 9px; }
 }
 @media(max-width: 720px) {
+    html { scroll-padding-bottom: 100px; }
     .app-shell { display: block; }
     main { padding: 24px 18px 96px; }
     main>header { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; }
