@@ -278,6 +278,9 @@ dialog::backdrop { background: #1f324945; backdrop-filter: blur(4px); }
 .itinerary-table .itinerary-actions button { color: #a32c39; min-width: 52px; min-height: 44px; border-radius: 6px; }
 .itinerary-table .itinerary-actions button:hover { background: #fcebee; }
 .itinerary-table .itinerary-actions button:focus-visible { outline: 2px solid #a32c39; outline-offset: -2px; }
+.delete-event { margin-right: auto; background: #fff0f2; color: #a32c39; border: 1px solid #f2ccd1; border-radius: 8px; padding: 10px 14px; cursor: pointer; }
+.delete-event:hover { background: #fce0e5; }
+.delete-event:focus-visible { outline: 2px solid #a32c39; outline-offset: 2px; }
 .itinerary-table .itinerary-date { background: white; font-variant-numeric: tabular-nums; }
 .itinerary-table [data-category="work"],.itinerary-legend [data-category="work"] { background: #fff2cd; }
 .itinerary-table [data-category="life"],.itinerary-legend [data-category="life"] { background: #dfeef9; }

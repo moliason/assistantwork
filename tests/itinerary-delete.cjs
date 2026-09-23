@@ -20,7 +20,9 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
                     {title: '我的行程保留', owner: 'mine', time: '08:00–09:00'},
                     {title: '要删除的老板行程', owner: 'boss', time: '10:00–11:00'}
                 ];
-                localStorage.setItem(`scheduleData_${account === 'fresh' ? 'fresh_v2' : account}`, JSON.stringify(records));
+                const now = new Date();
+                const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                localStorage.setItem(`scheduleData_${account === 'fresh' ? 'fresh_v2' : account}`, JSON.stringify(records.map(item => ({...item, date}))));
             }, account);
             await page.reload();
             await page.locator('[data-view="itinerary"]:visible').click();
@@ -52,8 +54,22 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
             assert.match(await page.locator('#itineraryRows').textContent(), /我的行程保留/);
             assert.match(await page.locator('#itineraryRows').textContent(), /稍晚的老板行程/);
             for (const title of ['我的行程保留', '稍晚的老板行程']) {
+                await page.locator('[data-view="calendar"]:visible').click();
+                await page.locator('#monthGrid [data-calendar-edit]').filter({hasText: title}).click();
+                assert.equal(await page.locator('#deleteEvent').isVisible(), true);
+                await page.locator('#eventForm [name="title"]').fill('');
+                page.once('dialog', dialog => dialog.dismiss());
+                await page.locator('#deleteEvent').click();
+                assert.equal(await page.locator('#newDialog').evaluate(el => el.open), true);
                 page.once('dialog', dialog => dialog.accept());
-                await page.getByRole('button', {name: `删除行程：${title}`, exact: true}).click();
+                await page.locator('#deleteEvent').click();
+                await page.waitForFunction(() => !document.querySelector('#newDialog').open);
+                assert.equal(await page.locator('#monthGrid [data-calendar-edit]').filter({hasText: title}).count(), 0);
+            }
+            for (const type of ['schedule', 'task', 'learning']) {
+                await page.evaluate(type => openCreator(type), type);
+                assert.equal(await page.locator('#deleteEvent').isVisible(), false);
+                await page.locator('#newDialog .modal-head [data-close-dialog]').click();
             }
             assert.match(await page.locator('#itineraryRows').textContent(), /暂无行程/);
             assert.equal(await page.locator('#itineraryRows td').getAttribute('colspan'), '11');
@@ -61,7 +77,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
             await page.locator('[data-view="itinerary"]:visible').click();
             assert.match(await page.locator('#itineraryRows').textContent(), /暂无行程/);
             assert.deepEqual(errors, []);
-            console.log(`PASS ${account}: visible/clickable at 320–1440px, cancel, sorted/filtered deletion, reload persistence, empty state`);
+            console.log(`PASS ${account}: visible/clickable at 320–1440px, table and calendar edit-dialog deletion, cancel/confirm, reload persistence, hidden on creation, empty state`);
             await context.close();
         }
     } finally {

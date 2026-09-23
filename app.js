@@ -497,8 +497,15 @@ function deleteSchedule(index) {
         localStorage.setItem('scheduleData_fresh_v2', JSON.stringify(schedule));
     renderTimeline();
     renderCalendar();
-    showToast('日程已删除')
+    showToast('日程已删除');
+    return true
 }
+document.querySelector('#deleteEvent').onclick = () => {
+    if (editingScheduleIndex !== null && deleteSchedule(editingScheduleIndex)) {
+        editingScheduleIndex = null;
+        dialog.close()
+    }
+};
 document.querySelectorAll('[data-header-create]').forEach(button => button.onclick = () => button.dataset.headerCreate === 'meeting' ? openQuickMeeting() : openCreator(button.dataset.headerCreate));
 document.querySelectorAll('[data-create]').forEach(button => button.onclick = () => button.dataset.create === 'meeting' ? openQuickMeeting() : openCreator(button.dataset.create));
 const timeMode = document.querySelector('#timeMode')
@@ -1768,6 +1775,7 @@ document.querySelector('#quickPrev').addEventListener('click', () => setTimeout(
 document.querySelector('#quickNext').addEventListener('click', () => setTimeout(persistMeetingDraft, 0));
 function openCreator(type='schedule') {
     editingScheduleIndex = null;
+    document.querySelector('#deleteEvent').hidden = true;
     const c = createConfig[type];
     eventForm.reset();
     eventForm.elements.createType.value = type;
@@ -1909,6 +1917,7 @@ document.querySelectorAll('[data-calendar-mode]').forEach(button => button.oncli
 function openScheduleEdit(index) {
     openCreator('schedule');
     editingScheduleIndex = index;
+    document.querySelector('#deleteEvent').hidden = false;
     const item = schedule[index];
     document.querySelector('#createTitle').textContent = '编辑日程';
     document.querySelector('#createDesc').textContent = '修改后会同步更新工作台和日历';

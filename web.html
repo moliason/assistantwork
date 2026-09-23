@@ -7,7 +7,7 @@
         <title>PURR PATCH｜助理日程工作台</title>
         <link rel="icon" type="image/jpeg" href="assets/purr-patch-logo.jpg?v=3"/>
         <link rel="stylesheet" href="style.css?v=layout-20260917"/>
-        <link rel="stylesheet" href="theme.css?v=safe-controls-20260923"/>
+        <link rel="stylesheet" href="theme.css?v=edit-delete-20260923"/>
     </head>
     <body>
         <section id="loginScreen" class="login-screen">
@@ -576,6 +576,7 @@
                     </div>
                 </div>
                 <div class="modal-actions">
+                    <button type="button" id="deleteEvent" class="delete-event" hidden>删除此日程</button>
                     <button type="button" class="secondary" data-close-dialog>取消</button>
                     <button type="submit" class="primary" id="saveEvent">保存日程</button>
                 </div>
@@ -1214,7 +1215,7 @@
             </form>
         </dialog>
         <div id="toast" class="toast">已保存到当前浏览器</div>
-        <script src="app.js?v=preserve-local-data-20260923"></script>
+        <script src="app.js?v=edit-delete-20260923"></script>
         <script src="weather.js?v=place-name-20260917"></script>
     </body>
 </html>

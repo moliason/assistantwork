@@ -16,6 +16,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         await page.evaluate(() => localStorage.setItem('xujianActiveAccount', 'demo'));
         await page.reload();
         const scenarios = [
+            {type: 'editSchedule', dialog: 'newDialog'},
             ...['schedule', 'task', 'learning'].map(type => ({type, dialog: 'newDialog'})),
             ...[0, 1, 2].map(step => ({type: 'quick', step, dialog: 'quickMeetingDialog'})),
             ...Array.from({length: 8}, (_, step) => ({type: 'wizard', step, dialog: 'meetingDialog'})),
@@ -28,6 +29,8 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
                     document.querySelectorAll('dialog[open]').forEach(d => d.close());
                     if (['schedule', 'task', 'learning'].includes(type))
                         openCreator(type);
+                    else if (type === 'editSchedule')
+                        openScheduleEdit(0);
                     else if (type === 'quick') {
                         openQuickMeeting();
                         showQuickStep(step);
