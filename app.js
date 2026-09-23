@@ -1258,17 +1258,7 @@ function applyFreshAccount() {
     updateCounts();
     document.querySelector('#accountState').textContent = '全新账号 · 本机数据'
 }
-function clearFreshAccountData() {
-    const prefixes = ['scheduleData_fresh', 'taskData_fresh', 'meetingTypes_fresh', 'peopleLibrary_fresh', 'todayLearning_fresh', 'learningRecords_fresh', 'dailySummary_fresh', 'learningSummary_fresh', 'scheduleDisplayName_fresh', 'createDraft_fresh', 'xujianFresh'];
-    Object.keys(localStorage).forEach(key => {
-        if (prefixes.some(prefix => key.startsWith(prefix)))
-            localStorage.removeItem(key);
-    }
-    );
-}
 function enterAccount(account) {
-    if (account === 'fresh')
-        clearFreshAccountData();
     localStorage.setItem('xujianActiveAccount', account);
     location.reload();
 }
@@ -1298,18 +1288,6 @@ loginForm.addEventListener('submit', e => {
 }
 );
 document.querySelectorAll('[data-demo-login]').forEach(button => button.onclick = () => enterAccount(button.dataset.demoLogin));
-function returnToAccountSelection() {
-    if (activeAccount === 'fresh') {
-        const confirmed = confirm('这是一次性全新账号。退出后，该账号以及你在其中填写的日程、任务、会议和学习数据都会被清除，无法恢复。\n\n确定退出并注销这个账号吗？');
-        if (!confirmed)
-            return;
-        clearFreshAccountData();
-    }
-    localStorage.removeItem('xujianActiveAccount');
-    location.reload();
-}
-document.querySelector('#logoutBtn').onclick = returnToAccountSelection;
-document.querySelector('#logoutHeaderBtn').onclick = returnToAccountSelection;
 
 // 2026-08-14：按日期统筹工作台、简化任务与学习模块
 const learningRecords = JSON.parse(localStorage.getItem(`learningRecords_${cleanAccountKey}`) || '[]');
@@ -1825,42 +1803,6 @@ function openQuickMeeting() {
     showQuickStep(draft?.step || 0);
     quickMeetingDialog.showModal()
 }
-const eventResetButton = document.createElement('button');
-eventResetButton.type = 'button';
-eventResetButton.id = 'resetEventDraft';
-eventResetButton.className = 'reset-draft';
-eventResetButton.textContent = '重置';
-document.querySelector('#newDialog .modal-actions').prepend(eventResetButton);
-eventResetButton.onclick = () => {
-    const type = eventForm.elements.createType.value;
-    if (!['schedule', 'task'].includes(type))
-        return;
-    localStorage.removeItem(draftKey(type));
-    eventForm.reset();
-    eventForm.elements.createType.value = type;
-    eventForm.elements.date.value = type === 'schedule' && document.querySelector('#calendar').classList.contains('active') ? calendarDate : baseDate;
-    syncTimeFields();
-    showToast(`${type === 'schedule' ? '日程' : '任务'}内容已重置`)
-}
-;
-const meetingResetButton = document.createElement('button');
-meetingResetButton.type = 'button';
-meetingResetButton.id = 'resetMeetingDraft';
-meetingResetButton.className = 'reset-draft';
-meetingResetButton.textContent = '重置';
-document.querySelector('#quickMeetingDialog .modal-actions').prepend(meetingResetButton);
-meetingResetButton.onclick = () => {
-    localStorage.removeItem(draftKey('meeting'));
-    quickMeetingForm.reset();
-    quickMeetingForm.elements.quickDate.value = baseDate;
-    quickMeetingForm.elements.quickInitiator.value = '';
-    quickMeetingForm.elements.quickMaterialTime.value = `${baseDate}T09:30`;
-    renderQuickTypeOptions();
-    calculateQuickDuration();
-    showQuickStep(0);
-    showToast('会议内容已重置')
-}
-;
 function showToast(message) {
     if (/日程(修改)?已保存/.test(message))
         localStorage.removeItem(draftKey('schedule'));

@@ -35,7 +35,7 @@
                     </button>
                     <button type="button" data-demo-login="fresh">
                         <b>全新账号</b>
-                        <small>创建一次性空账号；退出后账号及数据会被清除</small>
+                        <small>首次使用为空白；再次登录保留本浏览器已存数据</small>
                     </button>
                 </div>
             </div>
@@ -88,7 +88,6 @@
                             <span id="accountState">本机演示数据</span>
                         </small>
                     </div>
-                    <button type="button" id="logoutBtn" class="sidebar-logout" title="返回账号选择">退出</button>
                 </div>
             </aside>
             <main>
@@ -103,7 +102,6 @@
                     <div class="header-actions">
                         <div class="header-utility-actions">
                             <button class="icon-btn" id="searchBtn" aria-label="搜索">⌕</button>
-                            <button type="button" class="secondary account-exit-btn" id="logoutHeaderBtn">退出账号</button>
                         </div>
                         <div id="dashboardCreateActions" class="dashboard-create-actions">
                             <button class="secondary" data-header-create="schedule">＋ 新建日程</button>
@@ -1216,7 +1214,7 @@
             </form>
         </dialog>
         <div id="toast" class="toast">已保存到当前浏览器</div>
-        <script src="app.js?v=calendar-navigation-20260923"></script>
+        <script src="app.js?v=preserve-local-data-20260923"></script>
         <script src="weather.js?v=place-name-20260917"></script>
     </body>
 </html>
