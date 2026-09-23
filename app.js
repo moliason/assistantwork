@@ -15,6 +15,7 @@ const initialNow = new Date();
 var baseDate = `${initialNow.getFullYear()}-${String(initialNow.getMonth() + 1).padStart(2, '0')}-${String(initialNow.getDate()).padStart(2, '0')}`
   , dashboardDate = baseDate
   , itineraryDate = baseDate
+  , calendarDate = baseDate
   , taskDate = baseDate
   , taskPriorityFilter = 'all'
   , calendarMode = 'month'
@@ -1471,16 +1472,19 @@ function renderCalendar() {
     const target = document.querySelector('#monthGrid')
       , title = document.querySelector('#calendarPeriodTitle')
       , hint = document.querySelector('#calendarModeHint')
-      , today = new Date(`${baseDate}T00:00:00`)
+      , today = new Date(`${calendarDate}T00:00:00`)
       , year = today.getFullYear()
       , month = today.getMonth()
-      , weekStart = shiftDate(baseDate, -((today.getDay() + 6) % 7));
+      , weekStart = shiftDate(calendarDate, -((today.getDay() + 6) % 7));
+    document.querySelector('#calendarDatePicker').value = calendarDate;
+    document.querySelector('#calendarPrev').textContent = calendarMode === 'month' ? '‹ 上个月' : calendarMode === 'week' ? '‹ 上一周' : '‹ 前一天';
+    document.querySelector('#calendarNext').textContent = calendarMode === 'month' ? '下个月 ›' : calendarMode === 'week' ? '下一周 ›' : '后一天 ›';
     target.className = calendarMode === 'month' ? 'month-grid' : 'calendar-list-view';
     if (calendarMode === 'day') {
-        title.textContent = `${year}年${dateLabel(baseDate, false)}`;
+        title.textContent = `${year}年${dateLabel(calendarDate, false)}`;
         hint.textContent = '日视图 · 当天日程与会议';
-        const items = calendarItemsForDate(baseDate);
-        target.innerHTML = `<div class="calendar-day-heading">${dateLabel(baseDate)} · 周${'日一二三四五六'[today.getDay()]}</div>${items.map(calendarListItem).join('') || '<div class="empty-state">当天暂无日程或会议</div>'}`
+        const items = calendarItemsForDate(calendarDate);
+        target.innerHTML = `<div class="calendar-day-heading">${dateLabel(calendarDate)} · 周${'日一二三四五六'[today.getDay()]}</div>${items.map(calendarListItem).join('') || '<div class="empty-state">当天暂无日程或会议</div>'}`
     } else if (calendarMode === 'week') {
         title.textContent = `${weekStart.replaceAll('-', '/')} — ${shiftDate(weekStart, 6).replaceAll('-', '/')}`;
         hint.textContent = '周视图 · 按天查看本周日程与会议';
@@ -1503,13 +1507,19 @@ function renderCalendar() {
         for (let i = 1; i <= monthDays; i++) {
             const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`
               , content = calendarItemsForDate(date).map(item => item.kind === '日程' ? `<button class="mini-event ${item.owner === 'mine' ? 'mine' : 'boss-event'}" data-calendar-edit="${item.index}" title="点击编辑"><b>${stars(item.priority)}</b>${item.title}</button>` : `<button class="mini-event calendar-meeting" data-calendar-meeting="${item.index}"><b>会议</b>${item.title}</button>`).join('');
-            days.push(`<div class="day ${date === baseDate ? 'today' : ''}"><span>${i}</span>${content}</div>`)
+            days.push(`<div class="day ${date === baseDate ? 'today' : ''}"><span><button class="calendar-add-date" data-calendar-date="${date}" aria-label="在${date}新建日程">${i}</button></span>${content}</div>`)
         }
         for (let i = 1; days.length % 7; i++)
             days.push(`<div class="day muted"><span>${i}</span></div>`);
         target.innerHTML = heads + days.join('')
     }
-    bindCalendarActions()
+    bindCalendarActions();
+    target.querySelectorAll('[data-calendar-date]').forEach(button => button.onclick = () => {
+        calendarDate = button.dataset.calendarDate;
+        document.querySelector('#calendarDatePicker').value = calendarDate;
+        openCreator('schedule');
+        eventForm.elements.date.value = calendarDate
+    })
 }
 function syncTimeFields() {
     const mode = timeMode.value
@@ -1797,6 +1807,8 @@ function openCreator(type='schedule') {
     eventForm.elements.owner.options[1].textContent = type === 'schedule' ? '我的日程' : '我的工作';
     if (['schedule', 'task'].includes(type))
         restoreFormDraft(eventForm, type);
+    if (type === 'schedule' && document.querySelector('#calendar').classList.contains('active'))
+        eventForm.elements.date.value = calendarDate;
     syncTimeFields();
     dialog.showModal()
 }
@@ -1826,7 +1838,7 @@ eventResetButton.onclick = () => {
     localStorage.removeItem(draftKey(type));
     eventForm.reset();
     eventForm.elements.createType.value = type;
-    eventForm.elements.date.value = baseDate;
+    eventForm.elements.date.value = type === 'schedule' && document.querySelector('#calendar').classList.contains('active') ? calendarDate : baseDate;
     syncTimeFields();
     showToast(`${type === 'schedule' ? '日程' : '任务'}内容已重置`)
 }
@@ -1917,6 +1929,35 @@ document.querySelectorAll('[data-priority-filter]').forEach(b => b.onclick = () 
     renderTasks()
 }
 );
+document.querySelector('#calendarDatePicker').onchange = event => {
+    if (event.target.value && event.target.validity.valid) {
+        calendarDate = event.target.value;
+        renderCalendar()
+    }
+};
+document.querySelectorAll('[data-calendar-step]').forEach(button => button.onclick = () => {
+    const step = Number(button.dataset.calendarStep);
+    if (calendarMode === 'month') {
+        const date = new Date(`${calendarDate}T00:00:00`);
+        const day = date.getDate();
+        date.setDate(1);
+        date.setMonth(date.getMonth() + step);
+        date.setDate(Math.min(day, new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()));
+        if (date.getFullYear() < 100 || date.getFullYear() > 9999)
+            return;
+        calendarDate = `${String(date.getFullYear()).padStart(4, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    } else {
+        const date = shiftDate(calendarDate, step * (calendarMode === 'week' ? 7 : 1));
+        if (date < '0100-01-01' || date > '9999-12-31')
+            return;
+        calendarDate = date
+    }
+    renderCalendar()
+});
+document.querySelector('#calendarToday').onclick = () => {
+    calendarDate = baseDate;
+    renderCalendar()
+};
 document.querySelectorAll('[data-calendar-mode]').forEach(button => button.onclick = () => {
     calendarMode = button.dataset.calendarMode;
     document.querySelectorAll('[data-calendar-mode]').forEach(x => x.classList.toggle('active', x === button));
@@ -1991,6 +2032,8 @@ function refreshCurrentDate() {
         taskDate = date;
     if (itineraryDate === baseDate)
         itineraryDate = date;
+    if (calendarDate === baseDate)
+        calendarDate = date;
     baseDate = date;
     renderTimeline();
     renderTasks();

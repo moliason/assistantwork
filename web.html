@@ -7,7 +7,7 @@
         <title>PURR PATCH｜助理日程工作台</title>
         <link rel="icon" type="image/jpeg" href="assets/purr-patch-logo.jpg?v=3"/>
         <link rel="stylesheet" href="style.css?v=layout-20260917"/>
-        <link rel="stylesheet" href="theme.css?v=itinerary-delete-20260921"/>
+        <link rel="stylesheet" href="theme.css?v=calendar-navigation-20260923"/>
     </head>
     <body>
         <section id="loginScreen" class="login-screen">
@@ -284,6 +284,13 @@
                                 <button class="active" data-calendar-mode="month">月</button>
                             </div>
                         </div>
+                        <div class="calendar-navigation" aria-label="切换日历日期">
+                            <button type="button" id="calendarPrev" data-calendar-step="-1">‹ 上个月</button>
+                            <label>跳转年月日 <input type="date" id="calendarDatePicker" min="0100-01-01" max="9999-12-31"/></label>
+                            <button type="button" id="calendarNext" data-calendar-step="1">下个月 ›</button>
+                            <button type="button" id="calendarToday">回到今天</button>
+                        </div>
+                        <p class="calendar-create-hint">可选择其他年份、月份；点击月历中的日期数字，即可添加当天日程。</p>
                         <div id="monthGrid" class="month-grid"></div>
                     </div>
                 </section>
@@ -1209,7 +1216,7 @@
             </form>
         </dialog>
         <div id="toast" class="toast">已保存到当前浏览器</div>
-        <script src="app.js?v=itinerary-delete-20260921"></script>
+        <script src="app.js?v=calendar-navigation-20260923"></script>
         <script src="weather.js?v=place-name-20260917"></script>
     </body>
 </html>
